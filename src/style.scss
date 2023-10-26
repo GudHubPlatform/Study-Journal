@@ -1,6 +1,10 @@
 gh-study-journal {
     width: 100%;
 
+    .handsontable {
+        font-size: inherit;
+    }
+
     .handsontable .colHeader {
         transform: rotate(270deg) translateX(-10px);
     }
