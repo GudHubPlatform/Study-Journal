@@ -111,6 +111,10 @@ class GhInput extends GhHtmlElement {
             const nameFieldInfo = await gudhub.getField(app_id, student_name_field_id);
             const eventDateFieldInfo = await gudhub.getField(app_id, event_date_field_id);
 
+            if (!nameFieldInfo) {
+                return;
+            }
+
             const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
             const dateRange = `${dateInMilliseconds}:${dateInMilliseconds + oneDayInMilliseconds}`;
             

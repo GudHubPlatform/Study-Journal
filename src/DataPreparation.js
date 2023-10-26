@@ -1,3 +1,5 @@
+import fakeData from './fakeDataForTable.js';
+
 export default class DataPreparation {
 
     constructor(scope) {
@@ -7,7 +9,8 @@ export default class DataPreparation {
     async getTableData() {
         const interpretatedData = await this.getInterpretatedData();
 
-        const [uniqueDatesMilliseconds, students_data] = this.preparateTableData(interpretatedData);
+        //if interpretatedData = undefined, then take fake data (like demo view)
+        const [uniqueDatesMilliseconds, students_data] = this.preparateTableData(interpretatedData || fakeData);
     
         return [uniqueDatesMilliseconds, students_data];
     };
