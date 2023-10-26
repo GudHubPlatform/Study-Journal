@@ -97,6 +97,11 @@ class GhStudyJournal extends GhHtmlElement {
         } = this.scope.field_model.data_model;
 
         return async function findFieldByCell(event, coords) {
+            //check for mouse left button click
+            if (event.which !== 1) {
+                return;
+            }
+
             const {row} = coords;
             const {col} = coords;
 
