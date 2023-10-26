@@ -1,6 +1,6 @@
-import './input.webcomponent.js';
+import './studyjournal.webcomponent.js';
 
-export default class GhInputData {
+export default class GhStudyJournalData {
 
     /*------------------------------- FIELD TEMPLATE --------------------------------------*/
 
@@ -40,7 +40,7 @@ export default class GhInputData {
             id: 'default',
             name: 'Default',
             content: () =>
-                '<gh-input-web-component app-id="{{appId}}" item-id="{{itemId}}" field-id="{{fieldId}}"></gh-input-web-component>'
+                '<gh-study-journal app-id="{{appId}}" item-id="{{itemId}}" field-id="{{fieldId}}"></gh-study-journal>'
         }, {
             id: 'value',
             name: 'Value',

@@ -1,5 +1,5 @@
 import GhHtmlElement from "@gudhub/gh-html-element";
-import html from "./input.html";
+import html from "./studyjournal.html";
 import './style.scss';
 
 import Handsontable from 'handsontable';
@@ -7,7 +7,7 @@ import 'handsontable/dist/handsontable.full.min.css';
 
 import DataPreparation from "./DataPreparation.js";
 
-class GhInput extends GhHtmlElement {
+class GhStudyJournal extends GhHtmlElement {
 
     // Constructor with super() is required for native web component initialization
 
@@ -51,6 +51,9 @@ class GhInput extends GhHtmlElement {
             rowHeaders: true,
             width: '100%',
             height: 'auto',
+            fixedColumnsStart: 1,
+            fixedRowsTop: 0,
+            columnHeaderHeight: 45,
             licenseKey: 'non-commercial-and-evaluation',
             afterOnCellMouseUp: this.createCellClickCallback(),
         });
@@ -59,7 +62,6 @@ class GhInput extends GhHtmlElement {
         this.updateTable()
     };
 
-    // 
     async updateTable() {
         const [uniqueDatesMilliseconds, students_data] = await this.dataPreparation.getTableData();
 
@@ -232,6 +234,6 @@ function showGhDialog(fieldModel) {
 
 // Register web component only if it is not registered yet
 
-if(!customElements.get('gh-input-web-component')){
-    customElements.define('gh-input-web-component', GhInput);
+if(!customElements.get('gh-study-journal')){
+    customElements.define('gh-study-journal', GhStudyJournal);
 }
