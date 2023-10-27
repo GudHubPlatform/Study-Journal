@@ -63,7 +63,7 @@ class GhStudyJournal extends GhHtmlElement {
     };
 
     async updateTable() {
-        const [uniqueDatesMilliseconds, students_data] = await this.dataPreparation.getTableData();
+        const [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations] = await this.dataPreparation.getTableData();
 
         const formated_dates = uniqueDatesMilliseconds.map((milliseconds) => this.convertMsToDDMM(milliseconds));
 
@@ -73,6 +73,17 @@ class GhStudyJournal extends GhHtmlElement {
         });
 
         this.table.loadData(students_data);
+
+        // Iterate through rows and set metadata for the first column
+        students_data.forEach((rowData, row) => {
+            const studentName = rowData[0];
+
+            const originalStudentName = studentNameMapWithInterpretations.get(studentName);
+
+            if (originalStudentName) {
+              this.table.setCellMeta(row, 0, 'metadata', originalStudentName);
+            }
+          });
         
         // sets date in milliseconds as metadata in first row
         uniqueDatesMilliseconds.map((milliseconds, col) => {
@@ -91,10 +102,7 @@ class GhStudyJournal extends GhHtmlElement {
     };
 
     createCellClickCallback() {
-        const { app_id,
-            student_name_field_id,
-            event_date_field_id,
-        } = this.scope.field_model.data_model;
+        const {field_model} = this.scope;
 
         return async function findFieldByCell(event, coords) {
             //check for mouse left button click
@@ -110,7 +118,13 @@ class GhStudyJournal extends GhHtmlElement {
                 return;
             }
 
-            const name = this.getDataAtCell(row, 0);
+            const { app_id,
+                view_id,
+                student_name_field_id,
+                event_date_field_id,
+            } = field_model.data_model;
+
+            const rawName = this.getCellMeta(row, 0).metadata;
             const dateInMilliseconds = this.getCellMeta(0, col).metadata;
 
             const items = await gudhub.getItems(app_id, false);
@@ -130,7 +144,7 @@ class GhStudyJournal extends GhHtmlElement {
                 "field_id": student_name_field_id,
                 "search_type": "equal_and",
                 "selected_search_option_variable": "Value",
-                "valuesArray": [name]
+                "valuesArray": [rawName]
             },
             {
                 "data_type": eventDateFieldInfo.data_type,
@@ -141,15 +155,15 @@ class GhStudyJournal extends GhHtmlElement {
             }];
 
             // gudhub filter used instead of searching item in items
-            const filteredItems = await gudhub.getFilteredItems(items, filterList);
+            const filteredItems = await gudhub.filter(items, filterList);
 
             // viewId of item edit form
-            const viewId = 1868718;
+            const viewId = view_id;
             
             // fields in item are objects in array, but gudhub create/update item needs fields in object ({ fieldId : value }) 
             if (filteredItems.length === 0) {
                 const fields = {
-                    [student_name_field_id]: name,
+                    [student_name_field_id]: rawName,
                     [event_date_field_id]: dateInMilliseconds,
                 }
 

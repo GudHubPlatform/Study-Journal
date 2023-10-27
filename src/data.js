@@ -16,7 +16,13 @@ export default class GhStudyJournalData {
                 data_type: 'study_journal',
                 data_model: {
                     app_id: null,
-                    student_name: null,
+                    view_id: null,
+                    student_name_field_id: null,
+                    point_field_id: null,
+                    event_date_field_id: null,
+                    filters_list: [],
+                    sort_by_field_id: null,
+                    sorting_type: null,
                     interpretation: [{
                         src: 'form',
                         id: 'default',
@@ -143,6 +149,31 @@ export default class GhStudyJournalData {
                             });
                         }
                     }
+                ],[
+                  {
+                    title: 'Items Settings',
+                    type: 'header'
+                  },{
+                    type: 'ghElement',
+                    property: 'data_model.view_id',
+                    onInit: function (settingScope, fieldModel) {
+                      settingScope.$watch(function () {
+                        return fieldModel.data_model.app_id
+                      }, function (newValue) {
+                        settingScope.field_model.data_model.app_id = newValue;
+                      })
+                    },
+                    data_model: function (fieldModel) {
+                      return {
+                        data_model:{
+                          app_id: fieldModel.data_model.app_id
+                        },
+                        field_name: 'View name',
+                        name_space: 'view_name',
+                        data_type: 'view_list'
+                      };
+                    }
+                  }
                 ]
             ]
         }];
