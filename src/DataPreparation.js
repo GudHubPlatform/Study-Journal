@@ -22,8 +22,16 @@ export default class DataPreparation {
           return;
         }
       
-        const items = await gudhub.getItems(app_id, false);
+        let items = await gudhub.getItems(app_id, false);
+
+        const {filters_list} = this.options;
       
+        if (filters_list.length > 0) {
+          const filtered_items = await gudhub.filter(items, filters_list);
+          
+          items = filtered_items;
+        }
+
         const students_data = [];
         const studentNameMapWithInterpretations = new Map(); // To store: interpretated name => non-interpreted name
       
