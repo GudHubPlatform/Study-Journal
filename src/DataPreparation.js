@@ -3,7 +3,7 @@ import fakeData from './fakeDataForTable.js';
 export default class DataPreparation {
 
     constructor(scope) {
-        this.options = scope.field_model.data_model;
+        this.scope = scope;
     };
 
     async getTableData() {
@@ -16,7 +16,7 @@ export default class DataPreparation {
     };
 
     async getInterpretatedData() {
-        const { app_id, student_name_field_id, point_field_id, event_date_field_id } = this.options;
+        const { app_id, student_name_field_id, point_field_id, event_date_field_id } = this.scope.field_model.data_model;
       
         if (!app_id) {
           return;
@@ -24,10 +24,16 @@ export default class DataPreparation {
       
         let items = await gudhub.getItems(app_id, false);
 
-        const {filters_list} = this.options;
+        const {filters_list} = this.scope.field_model.data_model;
+
+        const modifiedFilterList = await gudhub.prefilter(filters_list, {
+          element_app_id: this.scope.field_model.data_model.app_id,
+          item_id: this.scope.itemId,
+          app_id: this.scope.field_model.app_id,
+        });
       
         if (filters_list.length > 0) {
-          const filtered_items = await gudhub.filter(items, filters_list);
+          const filtered_items = await gudhub.filter(items, modifiedFilterList);
           
           items = filtered_items;
         }
