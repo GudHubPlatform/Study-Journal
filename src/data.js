@@ -200,7 +200,7 @@ export default class GhStudyJournalData {
                       '<gh-filter gh-filter-data-model="field_model" filter-list="fieldModel.data_model.filters_list" gh-mode="variable"></gh-filter>',
                   },
                   {
-                    title: 'Items Filter',
+                    title: 'Items Sort',
                     type: 'header'
                   },{
                     type: "ghElement",
