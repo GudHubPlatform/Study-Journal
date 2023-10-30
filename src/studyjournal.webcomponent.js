@@ -16,7 +16,6 @@ class GhStudyJournal extends GhHtmlElement {
         this.table;
         this.dataPreparation;
         this.updateTableFunction;
-        this.setDateMetadata;
     }
 
     // onInit() is called after parent gh-element scope is ready
@@ -56,6 +55,11 @@ class GhStudyJournal extends GhHtmlElement {
             columnHeaderHeight: 45,
             licenseKey: 'non-commercial-and-evaluation',
             afterOnCellMouseUp: this.createCellClickCallback(),
+            plugins: ['columnSorting'],
+            columnSorting: {
+                indicator: false,
+                headerAction: false
+            },
         });
 
         // set table data after table creation
@@ -74,22 +78,33 @@ class GhStudyJournal extends GhHtmlElement {
 
         this.table.loadData(students_data);
 
+        this.sortTable(this.scope.field_model.data_model.sorting_type);
+
         // Iterate through rows and set metadata for the first column
-        students_data.forEach((rowData, row) => {
-            const studentName = rowData[0];
+        const rowCount = this.table.countRows();
 
-            const originalStudentName = studentNameMapWithInterpretations.get(studentName);
+        for (let row = 0; row < rowCount; row++) {
+            const rowData = this.table.getDataAtCell(row, 0);
 
-            if (originalStudentName) {
-              this.table.setCellMeta(row, 0, 'metadata', originalStudentName);
-            }
-          });
+            const metadata = studentNameMapWithInterpretations.get(rowData);
+
+            this.table.setCellMeta(row, 0, 'metadata', metadata);
+        }
         
         // sets date in milliseconds as metadata in first row
         uniqueDatesMilliseconds.map((milliseconds, col) => {
             this.table.setCellMeta(0, col + 1, 'metadata', milliseconds);
         });
     };
+
+    sortTable(sortOrder) {
+        const options = {
+            column: 0,
+            sortOrder: sortOrder === '' ? 'asc' : sortOrder
+        };
+        this.table.getPlugin('columnSorting').sort(options);
+    }
+      
 
     convertMsToDDMM(milliseconds){
             const date_separator = '/';

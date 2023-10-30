@@ -21,8 +21,7 @@ export default class GhStudyJournalData {
                     point_field_id: null,
                     event_date_field_id: null,
                     filters_list: [],
-                    sort_by_field_id: null,
-                    sorting_type: null,
+                    sorting_type: 'asc',
                     interpretation: [{
                         src: 'form',
                         id: 'default',
@@ -199,6 +198,32 @@ export default class GhStudyJournalData {
                     },
                     control:
                       '<gh-filter gh-filter-data-model="field_model" filter-list="fieldModel.data_model.filters_list" gh-mode="variable"></gh-filter>',
+                  },
+                  {
+                    title: 'Items Filter',
+                    type: 'header'
+                  },{
+                    type: "ghElement",
+                    property: "data_model.sorting_type",
+                    data_model() {
+                      return {
+                        field_name: "Sorting Type",
+                        name_space: "sorting_type",
+                        data_type: "text_opt",
+                        data_model: {
+                          options: [
+                            {
+                              name: "Ascending",
+                              value: "asc",
+                            },
+                            {
+                              name: "Descending",
+                              value: "desc",
+                            },
+                          ]
+                        },
+                      };
+                    }
                   }
               ]
             ]
