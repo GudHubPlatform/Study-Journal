@@ -1,22 +1,25 @@
-import fakeData from './fakeDataForTable.js';
-
 export default class DataPreparation {
 
     constructor(scope) {
         this.scope = scope;
+        this.interpretatedData;
+        this.items;
     };
 
-    async getTableData() {
-        const interpretatedData = await this.getInterpretatedData();
+    async getTableData(dateRange) {
+        if (!this.items) await this.initializeItems();
+        //filter by user pagination
+        const filtered_items = await this.filterItemsByPagination(this.items, dateRange);
+        const interpretated_visual_items = await this.getInterpretatedData(filtered_items);
 
         //if interpretatedData = undefined, then take fake data (like demo view)
-        const [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations] = this.preparateTableData(interpretatedData || fakeData);
+        const [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations] = this.preparateTableData(interpretated_visual_items);
     
         return [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations];
     };
 
-    async getInterpretatedData() {
-        const { app_id, student_name_field_id, point_field_id, event_date_field_id } = this.scope.field_model.data_model;
+    async initializeItems() {
+        const { app_id } = this.scope.field_model.data_model;
       
         if (!app_id) {
           return;
@@ -24,19 +27,13 @@ export default class DataPreparation {
       
         let items = await gudhub.getItems(app_id, false);
 
-        const {filters_list} = this.scope.field_model.data_model;
+        items = await this.filterItemsByFilterSettings(items);
 
-        const modifiedFilterList = await gudhub.prefilter(filters_list, {
-          element_app_id: this.scope.field_model.data_model.app_id,
-          item_id: this.scope.itemId,
-          app_id: this.scope.field_model.app_id,
-        });
-      
-        if (filters_list.length > 0) {
-          const filtered_items = await gudhub.filter(items, modifiedFilterList);
-          
-          items = filtered_items;
-        }
+        this.items = items;
+    }
+
+    async getInterpretatedData(items) {
+        const { app_id, student_name_field_id, point_field_id, event_date_field_id } = this.scope.field_model.data_model;
 
         const students_data = [];
         const studentNameMapWithInterpretations = new Map(); // To store: interpretated name => non-interpreted name
@@ -101,5 +98,41 @@ export default class DataPreparation {
       
         return [uniqueDatesMilliseconds, twoDimensionalArray, studentNameMapWithInterpretations];
     }
+
+    async filterItemsByFilterSettings(items) {
+      const {filters_list} = this.scope.field_model.data_model;
+
+        const modifiedFilterList = await gudhub.prefilter(filters_list, {
+          element_app_id: this.scope.field_model.data_model.app_id,
+          item_id: this.scope.itemId,
+          app_id: this.scope.field_model.app_id,
+        });
       
+        const filtered_items = await gudhub.filter(items, modifiedFilterList);
+
+        return filtered_items;
+    }
+
+    async filterItemsByPagination(items, dateRange) {
+
+      if (!dateRange) return items;
+
+      const { app_id, event_date_field_id } = this.scope.field_model.data_model;
+
+      const eventDateFieldInfo = await gudhub.getField(app_id, event_date_field_id);
+
+      const { start, end } = dateRange;
+
+      const filterList = [{
+        "data_type": eventDateFieldInfo.data_type,
+        "field_id": event_date_field_id,
+        'search_type': "range",
+        "selected_search_option_variable": "Value",
+        "valuesArray": [`${start}: ${end}`]
+      }];
+
+      const filteredItems = await gudhub.filter(items, filterList);
+
+      return filteredItems;
+    }
 }

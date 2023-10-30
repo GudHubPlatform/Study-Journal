@@ -6,6 +6,7 @@ import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.full.min.css';
 
 import DataPreparation from "./DataPreparation.js";
+import DatePagination from "./DatePagination.js";
 
 class GhStudyJournal extends GhHtmlElement {
 
@@ -15,20 +16,24 @@ class GhStudyJournal extends GhHtmlElement {
         super();
         this.table;
         this.dataPreparation;
+        this.datePagination;
         this.updateTableFunction;
     }
 
     // onInit() is called after parent gh-element scope is ready
 
     onInit() {
-        this.dataPreparation = new DataPreparation(this.scope);
-
         super.render(html);
 
         const {app_id} = this.scope.field_model.data_model;
 
+        this.renderPagination();
+        this.dataPreparation = new DataPreparation(this.scope);
+
         this.updateTableFunction = () => {
-            this.updateTable();
+            this.dataPreparation.initializeItems().then(() => {
+                this.updateTable();
+            });
         };
 
         gudhub.on('gh_items_update', {app_id}, this.updateTableFunction);
@@ -42,6 +47,16 @@ class GhStudyJournal extends GhHtmlElement {
 
         gudhub.destroy('gh_items_update', {app_id}, this.updateTableFunction);
     };
+
+    async renderPagination() {
+        const container = this.querySelector('.pagination');
+
+        const handleOnChangePagination = () => {
+            this.updateTable();
+        };
+
+        this.datePagination = new DatePagination(container, handleOnChangePagination);
+    }
 
     async renderTable() {
         const container = this.querySelector('.table');
@@ -63,11 +78,12 @@ class GhStudyJournal extends GhHtmlElement {
         });
 
         // set table data after table creation
-        this.updateTable()
+        this.updateTable();
     };
 
     async updateTable() {
-        const [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations] = await this.dataPreparation.getTableData();
+        const dateRange = this.datePagination.currentDateRange;
+        const [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations] = await this.dataPreparation.getTableData(dateRange);
 
         const formated_dates = uniqueDatesMilliseconds.map((milliseconds) => this.convertMsToDDMM(milliseconds));
 
@@ -104,7 +120,6 @@ class GhStudyJournal extends GhHtmlElement {
         };
         this.table.getPlugin('columnSorting').sort(options);
     }
-      
 
     convertMsToDDMM(milliseconds){
             const date_separator = '/';

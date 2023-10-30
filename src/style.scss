@@ -1,6 +1,14 @@
 gh-study-journal {
     width: 100%;
 
+    .pagination {
+        max-width: 350px;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
     .handsontable {
         font-size: inherit;
 
