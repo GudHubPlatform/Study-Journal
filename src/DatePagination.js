@@ -14,13 +14,21 @@ export default class DatePagination {
     }
     
     createElements() {
-        this.prevButton = document.createElement('button');
-        this.prevButton.textContent = '<';
+        this.prevIconSpan = document.createElement('span');
+        this.prevIconSpan.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M217.9 256L345 129c9.4-9.4 9.4-24.6 0-33.9-9.4-9.4-24.6-9.3-34 0L167 239c-9.1 9.1-9.3 23.7-.7 33.1L310.9 417c4.7 4.7 10.9 7 17 7s12.3-2.3 17-7c9.4-9.4 9.4-24.6 0-33.9L217.9 256z"></path></svg>';
+        this.nextIconSpan = document.createElement('span');
+        this.nextIconSpan.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M294.1 256L167 129c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.3 34 0L345 239c9.1 9.1 9.3 23.7.7 33.1L201.1 417c-4.7 4.7-10.9 7-17 7s-12.3-2.3-17-7c-9.4-9.4-9.4-24.6 0-33.9l127-127.1z"></path></svg>';
 
+        this.prevButton = document.createElement('button');
+        this.prevButton.classList.add('icon-button', 'pagination-button');
+        this.prevButton.appendChild(this.prevIconSpan);
+    
         this.nextButton = document.createElement('button');
-        this.nextButton.textContent = '>';
+        this.nextButton.classList.add('icon-button', 'pagination-button');
+        this.nextButton.appendChild(this.nextIconSpan);
 
         this.todayButton = document.createElement('button');
+        this.todayButton.classList.add('pagination-button');
         this.todayButton.textContent = 'Today';
 
         this.buttons_container = document.createElement('div');
@@ -83,8 +91,16 @@ export default class DatePagination {
 
         if (this.isEnabled) {
             this.currentDateRange = this.dateRangeForToday;
+
+            this.prevButton.classList.remove('disabled');
+            this.nextButton.classList.remove('disabled');
+            this.todayButton.classList.remove('disabled');
         } else {
             this.currentDateRange = null;
+
+            this.prevButton.classList.add('disabled');
+            this.nextButton.classList.add('disabled');
+            this.todayButton.classList.add('disabled');
         }
 
         this.onChange();
@@ -99,7 +115,6 @@ export default class DatePagination {
         endDate.setDate(now.getDate() + daysUntilSunday);
         const startDate = new Date(endDate);
         startDate.setDate(endDate.getDate() - 28);
-        // endDate.setDate(endDate.getDate() + 1);
         const startMilliseconds = startDate.getTime();
         const endMilliseconds = endDate.getTime();
 

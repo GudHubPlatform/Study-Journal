@@ -2,11 +2,96 @@ gh-study-journal {
     width: 100%;
 
     .pagination {
-        max-width: 350px;
+        max-width: 400px;
 
         display: flex;
         justify-content: space-between;
         align-items: center;
+
+        .icon-button {
+            &:has(span) {
+                -moz-box-flex: 0;
+                flex: 0 0 auto;
+                height: 2.5em;
+                width: 2.5em;
+                padding: 0.5em;
+            }
+        }
+        .pagination-button {
+            background-color: transparent;
+            border: none;
+
+            transition: opacity .1s ease-out,background-color .1s ease-out;
+        
+            -moz-box-pack: center;
+            -moz-box-align: center;
+            align-items: center;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            cursor: pointer;
+            display: inline-block;
+            display: -moz-inline-box;
+            display: inline-flex;
+            font-size: 1em;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            text-align: center;
+            text-overflow: ellipsis;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            vertical-align: middle;
+            white-space: nowrap;
+            z-index: 1;
+
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background: none;
+            border: 0;
+            margin: 0;
+            padding: 0.5em;
+
+            color: #007aff;
+
+            &:hover {
+                opacity: .7;
+            }
+
+            span {
+                color: #007aff;
+    
+                -moz-box-flex: 0;
+                display: inline-block;
+                flex: 0 0 auto;
+                height: 1.5em;
+                line-height: 1.5em;
+                text-align: center;
+                vertical-align: middle;
+                width: 1.5em;
+    
+                direction: ltr;
+
+                svg {
+                    // .mbsc-icon>svg {
+                        fill: currentColor;
+                        display: block;
+                        height: 100%;
+                        margin: 0 auto;
+                        width: 100%;
+                    // }
+                }
+            }
+        }
+
+        .disabled {
+            pointer-events: none;
+            opacity: .5;
+            cursor: none;
+        }
     }
 
     .handsontable {
@@ -56,6 +141,4 @@ gh-study-journal {
             }
         }
     }
-    
 }
-
