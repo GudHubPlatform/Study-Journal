@@ -21,7 +21,7 @@ export default class DataPreparation {
     };
 
     async initializeItems() {
-        const { journal_app_id, students_app_id } = this.scope.field_model.data_model;
+        const { journal_app_id } = this.scope.field_model.data_model;
       
         if (!journal_app_id) {
           return;
@@ -42,7 +42,7 @@ export default class DataPreparation {
         }
 
         const students_data = [];
-        const studentNameMapWithInterpretations = new Map(); // To store: interpretated name => non-interpreted name
+        const studentNameMapWithInterpretations = new Map(); // To store: non-interpretated name => interpretated name
       
         for (const item of items) {
           const { item_id } = item;

@@ -16,6 +16,7 @@ export default class GhStudyJournalData {
                 data_type: 'study_journal',
                 data_model: {
                     students_app_id: null,
+                    students_app_name_field_id: null,
                     journal_app_id: null,
                     view_id: null,
                     student_name_field_id: null,
@@ -90,6 +91,27 @@ export default class GhStudyJournalData {
                             }
                         }
                     },
+                    {
+                      type: 'ghElement',
+                      property: 'data_model.students_app_name_field_id',
+                      data_model: function (fieldModel) {
+                          return {
+                              data_type: 'field',
+                              field_name: 'Student Full Name',
+                              name_space: 'student_full_name',
+                              data_model: {
+                                  app_id: fieldModel.data_model.students_app_id
+                              }
+                          }
+                      },
+                      onInit: function(settingScope, fieldModel) {
+                        settingScope.$watch(function() {
+                            return fieldModel.data_model.students_app_id;
+                        }, function(newValue) {
+                            settingScope.field_model.data_model.app_id = newValue;
+                        });
+                      },
+                  },
                 ],
                 [
                   {
