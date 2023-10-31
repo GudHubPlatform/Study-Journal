@@ -15,7 +15,8 @@ export default class GhStudyJournalData {
                 field_value: '',
                 data_type: 'study_journal',
                 data_model: {
-                    app_id: null,
+                    students_app_id: null,
+                    journal_app_id: null,
                     view_id: null,
                     student_name_field_id: null,
                     point_field_id: null,
@@ -62,14 +63,47 @@ export default class GhStudyJournalData {
             icon: 'menu',
             columns_list: [
                 [
+                  {
+                    title: 'Students Settings',
+                    type: 'header'
+                  },
                     {
                         type: 'ghElement',
-                        property: 'data_model.app_id',
+                        property: 'data_model.students_app_id',
                         data_model: function () {
                             return {
                                 data_type: 'app',
-                                field_name: 'Operations App',
-                                name_space: 'operations_app',
+                                field_name: 'Students App',
+                                name_space: 'students_app',
+                                data_model: {
+                                    current_app: false,
+                                    interpretation: [{
+                                        src: 'form',
+                                        id: 'with_text',
+                                        settings: {
+                                            editable: 1,
+                                            show_field_name: 1,
+                                            show_field: 1
+                                        },
+                                    }]
+                                }
+                            }
+                        }
+                    },
+                ],
+                [
+                  {
+                    title: 'Journal Settings',
+                    type: 'header'
+                  },
+                    {
+                        type: 'ghElement',
+                        property: 'data_model.journal_app_id',
+                        data_model: function () {
+                            return {
+                                data_type: 'app',
+                                field_name: 'Points App',
+                                name_space: 'points_app',
                                 data_model: {
                                     current_app: false,
                                     interpretation: [{
@@ -94,60 +128,60 @@ export default class GhStudyJournalData {
                                 field_name: 'Student Name',
                                 name_space: 'student_name',
                                 data_model: {
-                                    app_id: fieldModel.data_model.app_id
+                                    app_id: fieldModel.data_model.journal_app_id
                                 }
                             }
                         },
                         onInit: function(settingScope, fieldModel) {
-                            settingScope.$watch(function() {
-                                return fieldModel.data_model.app_id;
-                            }, function(newValue) {
-                                settingScope.field_model.data_model.app_id = newValue;
-                            });
-                        }
+                          settingScope.$watch(function() {
+                              return fieldModel.data_model.journal_app_id;
+                          }, function(newValue) {
+                              settingScope.field_model.data_model.app_id = newValue;
+                          });
+                        },
                     },
                     {
-                        type: 'ghElement',
-                        property: 'data_model.point_field_id',
-                        data_model: function (fieldModel) {
-                            return {
-                                data_type: 'field',
-                                field_name: 'Point',
-                                name_space: 'point',
-                                data_model: {
-                                    app_id: fieldModel.data_model.app_id
-                                }
+                      type: 'ghElement',
+                      property: 'data_model.point_field_id',
+                      data_model: function (fieldModel) {
+                        return {
+                            data_type: 'field',
+                            field_name: 'Point',
+                            name_space: 'point',
+                            data_model: {
+                                app_id: fieldModel.data_model.journal_app_id
                             }
-                        },
-                        onInit: function(settingScope, fieldModel) {
-                            settingScope.$watch(function() {
-                                return fieldModel.data_model.app_id;
-                            }, function(newValue) {
-                                settingScope.field_model.data_model.app_id = newValue;
-                            });
                         }
-                    },
-                    {
-                        type: 'ghElement',
-                        property: 'data_model.event_date_field_id',
-                        data_model: function (fieldModel) {
-                            return {
-                                data_type: 'field',
-                                field_name: 'Event Date',
-                                name_space: 'event_date',
-                                data_model: {
-                                    app_id: fieldModel.data_model.app_id
-                                }
+                      },
+                      onInit: function (settingScope, fieldModel) {
+                          settingScope.$watch(function () {
+                              return fieldModel.data_model.journal_app_id;
+                          }, function(newValue) {
+                              settingScope.field_model.data_model.app_id = newValue;
+                          });
+                      },
+                  },
+                  {
+                      type: 'ghElement',
+                      property: 'data_model.event_date_field_id',
+                      data_model: function (fieldModel) {
+                        return {
+                            data_type: 'field',
+                            field_name: 'Event Date',
+                            name_space: 'event_date',
+                            data_model: {
+                                app_id: fieldModel.data_model.journal_app_id
                             }
-                        },
-                        onInit: function(settingScope, fieldModel) {
-                            settingScope.$watch(function() {
-                                return fieldModel.data_model.app_id;
-                            }, function(newValue) {
-                                settingScope.field_model.data_model.app_id = newValue;
-                            });
                         }
-                    }
+                      },
+                      onInit: function (settingScope, fieldModel) {
+                          settingScope.$watch(function () {
+                              return fieldModel.data_model.journal_app_id;
+                          }, function(newValue) {
+                              settingScope.field_model.data_model.app_id = newValue;
+                          });
+                      },
+                  }
                 ],[
                   {
                     title: 'Items Settings',
@@ -157,7 +191,7 @@ export default class GhStudyJournalData {
                     property: 'data_model.view_id',
                     onInit: function (settingScope, fieldModel) {
                       settingScope.$watch(function () {
-                        return fieldModel.data_model.app_id
+                        return fieldModel.data_model.journal_app_id
                       }, function (newValue) {
                         settingScope.field_model.data_model.app_id = newValue;
                       })
@@ -165,7 +199,7 @@ export default class GhStudyJournalData {
                     data_model: function (fieldModel) {
                       return {
                         data_model:{
-                          app_id: fieldModel.data_model.app_id
+                          app_id: fieldModel.data_model.journal_app_id
                         },
                         field_name: 'View name',
                         name_space: 'view_name',
@@ -182,7 +216,7 @@ export default class GhStudyJournalData {
                     onInit: function (settingScope) {
                       settingScope.$watch(
                         function () {
-                          return settingScope.fieldModel.data_model.app_id;
+                          return settingScope.fieldModel.data_model.journal_app_id;
                         },
                         function (newValue) {
                           settingScope.field_model.data_model.app_id = newValue;
@@ -192,7 +226,7 @@ export default class GhStudyJournalData {
                     data_model: function (fieldModel) {
                       return {
                         recipient: {
-                          app_id: fieldModel.data_model.app_id,
+                          app_id: fieldModel.data_model.journal_app_id,
                         },
                       };
                     },

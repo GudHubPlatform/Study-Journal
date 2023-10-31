@@ -12,6 +12,8 @@ export default class DataPreparation {
         const filtered_items = await this.filterItemsByPagination(this.items, dateRange);
         const interpretated_visual_items = await this.getInterpretatedData(filtered_items);
 
+        if (!interpretated_visual_items) return [];
+
         //if interpretatedData = undefined, then take fake data (like demo view)
         const [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations] = this.prepareTableData(interpretated_visual_items);
     
@@ -19,13 +21,13 @@ export default class DataPreparation {
     };
 
     async initializeItems() {
-        const { app_id } = this.scope.field_model.data_model;
+        const { journal_app_id, students_app_id } = this.scope.field_model.data_model;
       
-        if (!app_id) {
+        if (!journal_app_id) {
           return;
         }
       
-        let items = await gudhub.getItems(app_id, false);
+        let items = await gudhub.getItems(journal_app_id, false);
 
         items = await this.filterItemsByFilterSettings(items);
 
@@ -33,7 +35,11 @@ export default class DataPreparation {
     }
 
     async getInterpretatedData(items) {
-        const { app_id, student_name_field_id, point_field_id, event_date_field_id } = this.scope.field_model.data_model;
+        const { journal_app_id, student_name_field_id, point_field_id, event_date_field_id } = this.scope.field_model.data_model;
+
+        if (!journal_app_id || !student_name_field_id || !point_field_id || !event_date_field_id) {
+          return;
+        }
 
         const students_data = [];
         const studentNameMapWithInterpretations = new Map(); // To store: interpretated name => non-interpreted name
@@ -44,8 +50,8 @@ export default class DataPreparation {
           const student_name_field = item.fields.find(({field_id}) => field_id == student_name_field_id);
 
           const raw_student_name = student_name_field.field_value;
-          const point = await gudhub.getInterpretationById(app_id, item_id, point_field_id, 'value');
-          const event_date = await gudhub.getInterpretationById(app_id, item_id, event_date_field_id, 'value');
+          const point = await gudhub.getInterpretationById(journal_app_id, item_id, point_field_id, 'value');
+          const event_date = await gudhub.getInterpretationById(journal_app_id, item_id, event_date_field_id, 'value');
       
           // set hours, minutes, seconds to 0
           const date_without_time = new Date(event_date).setHours(0, 0, 0, 0);
@@ -60,7 +66,7 @@ export default class DataPreparation {
       
           students_data.push(student_values);
       
-          const student_name = await gudhub.getInterpretationById(app_id, item_id, student_name_field_id, 'value');
+          const student_name = await gudhub.getInterpretationById(journal_app_id, item_id, student_name_field_id, 'value');
 
           // Save the non-interpreted name (to add it as metadata in namecell) alongside the interpreted one
           studentNameMapWithInterpretations.set(raw_student_name, student_name);
@@ -103,9 +109,9 @@ export default class DataPreparation {
       const {filters_list} = this.scope.field_model.data_model;
 
         const modifiedFilterList = await gudhub.prefilter(filters_list, {
-          element_app_id: this.scope.field_model.data_model.app_id,
+          element_app_id: this.scope.field_model.data_model.journal_app_id,
           item_id: this.scope.itemId,
-          app_id: this.scope.field_model.app_id,
+          app_id: this.scope.field_model.journal_app_id,
         });
       
         const filtered_items = await gudhub.filter(items, modifiedFilterList);
@@ -117,9 +123,13 @@ export default class DataPreparation {
 
       if (!dateRange) return items;
 
-      const { app_id, event_date_field_id } = this.scope.field_model.data_model;
+      const { journal_app_id, event_date_field_id } = this.scope.field_model.data_model;
 
-      const eventDateFieldInfo = await gudhub.getField(app_id, event_date_field_id);
+      const eventDateFieldInfo = await gudhub.getField(journal_app_id, event_date_field_id);
+
+      if (!eventDateFieldInfo) {
+        return items;
+      }
 
       const { start, end } = dateRange;
 

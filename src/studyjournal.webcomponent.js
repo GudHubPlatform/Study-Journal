@@ -25,7 +25,7 @@ class GhStudyJournal extends GhHtmlElement {
     onInit() {
         super.render(html);
 
-        const {app_id} = this.scope.field_model.data_model;
+        const {journal_app_id} = this.scope.field_model.data_model;
 
         this.renderPagination();
         this.dataPreparation = new DataPreparation(this.scope);
@@ -36,16 +36,16 @@ class GhStudyJournal extends GhHtmlElement {
             });
         };
 
-        gudhub.on('gh_items_update', {app_id}, this.updateTableFunction);
+        gudhub.on('gh_items_update', {journal_app_id}, this.updateTableFunction);
     
         this.renderTable();
     };
 
     // disconnectedCallback() is called after the component is destroyed
     disconnectedCallback() {
-        const {app_id} = this.scope.field_model.data_model;
+        const {journal_app_id} = this.scope.field_model.data_model;
 
-        gudhub.destroy('gh_items_update', {app_id}, this.updateTableFunction);
+        gudhub.destroy('gh_items_update', {journal_app_id}, this.updateTableFunction);
     };
 
     async renderPagination() {
@@ -85,6 +85,8 @@ class GhStudyJournal extends GhHtmlElement {
         const dateRange = this.datePagination.currentDateRange;
         const [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations] = await this.dataPreparation.getTableData(dateRange);
 
+        if (!uniqueDatesMilliseconds || !students_data || !studentNameMapWithInterpretations) return;
+
         const formated_dates = uniqueDatesMilliseconds.map((milliseconds) => this.convertMsToDDMM(milliseconds));
 
         // sets dates mm:dd in colHeaders
@@ -105,7 +107,6 @@ class GhStudyJournal extends GhHtmlElement {
             this.table.setDataAtCell(row, 0, studentNameMapWithInterpretations.get(rowData));
             this.table.setCellMeta(row, 0, 'metadata', metadata);
         }
-
 
         this.sortTable(this.scope.field_model.data_model.sorting_type);
         
@@ -150,7 +151,7 @@ class GhStudyJournal extends GhHtmlElement {
                 return;
             }
 
-            const { app_id,
+            const { journal_app_id,
                 view_id,
                 student_name_field_id,
                 event_date_field_id,
@@ -159,10 +160,10 @@ class GhStudyJournal extends GhHtmlElement {
             const rawName = this.getCellMeta(row, 0).metadata;
             const dateInMilliseconds = this.getCellMeta(0, col).metadata;
 
-            const items = await gudhub.getItems(app_id, false);
+            const items = await gudhub.getItems(journal_app_id, false);
 
-            const nameFieldInfo = await gudhub.getField(app_id, student_name_field_id);
-            const eventDateFieldInfo = await gudhub.getField(app_id, event_date_field_id);
+            const nameFieldInfo = await gudhub.getField(journal_app_id, student_name_field_id);
+            const eventDateFieldInfo = await gudhub.getField(journal_app_id, event_date_field_id);
 
             if (!nameFieldInfo) {
                 return;
@@ -200,7 +201,7 @@ class GhStudyJournal extends GhHtmlElement {
                 }
 
                 const fieldModel = {
-                    appId: app_id,
+                    appId: journal_app_id,
                     viewId,
                     fields
                 };
@@ -215,7 +216,7 @@ class GhStudyJournal extends GhHtmlElement {
                 });
 
                 const fieldModel = {
-                    appId: app_id,
+                    appId: journal_app_id,
                     itemId: item_id,
                     viewId,
                     fields: fieldsObject
