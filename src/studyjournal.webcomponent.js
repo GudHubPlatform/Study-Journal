@@ -94,18 +94,20 @@ class GhStudyJournal extends GhHtmlElement {
 
         this.table.loadData(students_data);
 
-        this.sortTable(this.scope.field_model.data_model.sorting_type);
-
-        // Iterate through rows and set metadata for the first column
+        // Iterate through rows and set rawData as metadata and interpretatedData as cellData for the first column
         const rowCount = this.table.countRows();
 
         for (let row = 0; row < rowCount; row++) {
             const rowData = this.table.getDataAtCell(row, 0);
 
-            const metadata = studentNameMapWithInterpretations.get(rowData);
+            const metadata = rowData;
 
+            this.table.setDataAtCell(row, 0, studentNameMapWithInterpretations.get(rowData));
             this.table.setCellMeta(row, 0, 'metadata', metadata);
         }
+
+
+        this.sortTable(this.scope.field_model.data_model.sorting_type);
         
         // sets date in milliseconds as metadata in first row
         uniqueDatesMilliseconds.map((milliseconds, col) => {

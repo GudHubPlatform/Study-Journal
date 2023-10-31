@@ -13,7 +13,7 @@ export default class DataPreparation {
         const interpretated_visual_items = await this.getInterpretatedData(filtered_items);
 
         //if interpretatedData = undefined, then take fake data (like demo view)
-        const [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations] = this.preparateTableData(interpretated_visual_items);
+        const [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations] = this.prepareTableData(interpretated_visual_items);
     
         return [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations];
     };
@@ -41,7 +41,9 @@ export default class DataPreparation {
         for (const item of items) {
           const { item_id } = item;
       
-          const student_name = await gudhub.getInterpretationById(app_id, item_id, student_name_field_id, 'value');
+          const student_name_field = item.fields.find(({field_id}) => field_id == student_name_field_id);
+
+          const raw_student_name = student_name_field.field_value;
           const point = await gudhub.getInterpretationById(app_id, item_id, point_field_id, 'value');
           const event_date = await gudhub.getInterpretationById(app_id, item_id, event_date_field_id, 'value');
       
@@ -50,7 +52,7 @@ export default class DataPreparation {
       
           const student_values = [];
       
-          for (const value of [student_name, point, date_without_time]) {
+          for (const value of [raw_student_name, point, date_without_time]) {
             if (value !== null) {
               student_values.push(value);
             }
@@ -58,18 +60,16 @@ export default class DataPreparation {
       
           students_data.push(student_values);
       
-          const student_name_field = item.fields.find(({field_id}) => field_id == student_name_field_id);
-
-          const raw_student_name = student_name_field.field_value;
+          const student_name = await gudhub.getInterpretationById(app_id, item_id, student_name_field_id, 'value');
 
           // Save the non-interpreted name (to add it as metadata in namecell) alongside the interpreted one
-          studentNameMapWithInterpretations.set(student_name, raw_student_name);
+          studentNameMapWithInterpretations.set(raw_student_name, student_name);
         }
       
         return { students_data, studentNameMapWithInterpretations };
       }
       
-    preparateTableData(data) {
+    prepareTableData(data) {
         const {students_data, studentNameMapWithInterpretations} = data; 
 
         students_data.sort((a, b) => new Date(a[2]) - new Date(b[2]));
@@ -80,14 +80,14 @@ export default class DataPreparation {
         const twoDimensionalArray = [];
       
         // Iterate through each unique student name.
-        uniqueStudentNames.forEach(studentName => {
+        uniqueStudentNames.forEach(rawStudentName => {
           // Create a row with the student's name.
-          const row = [studentName];
+          const row = [rawStudentName];
       
           // Iterate through each unique date.
           uniqueDatesMilliseconds.forEach(date => {
             // Find the mark for the student and date combination.
-            const mark = students_data.find(item => item[0] === studentName && item[2] === date);
+            const mark = students_data.find(item => item[0] === rawStudentName && item[2] === date);
       
             // Add the mark to the row or an empty string if no mark is found.
             row.push(mark ? mark[1] : '');
