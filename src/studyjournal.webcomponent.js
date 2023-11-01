@@ -62,6 +62,12 @@ class GhStudyJournal extends GhHtmlElement {
     async renderTable() {
         const container = this.querySelector('.table');
 
+        const customCyrillicCompareFactory = function (sortOrder) {
+            return function customCyrillicCompare(value, nextValue) {
+                return value.localeCompare(nextValue) * (sortOrder === 'asc' ? 1 : -1);
+            };
+        }
+
         this.table = new Handsontable(container, {
             rowHeaders: true,
             width: '100%',
@@ -71,11 +77,14 @@ class GhStudyJournal extends GhHtmlElement {
             columnHeaderHeight: 45,
             licenseKey: 'non-commercial-and-evaluation',
             afterOnCellMouseUp: this.createCellClickCallback(),
-            plugins: ['columnSorting'],
             columnSorting: {
                 indicator: false,
-                headerAction: false
+                headerAction: false,
+                compareFunctionFactory: (sortOrder) => {
+                    return customCyrillicCompareFactory(sortOrder);
+                }
             },
+            
         });
 
         // set table data after table creation
