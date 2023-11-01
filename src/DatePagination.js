@@ -1,5 +1,5 @@
 export default class DatePagination {
-    constructor(container, onChange, onClickOnOff) {
+    constructor(container, isEnabled, onChange, onClickOnOff) {
         this.container = container;
         this.onChange = onChange;
 
@@ -7,10 +7,12 @@ export default class DatePagination {
         this.currentDateRange = this.dateRangeForToday;
 
         this.buttons_container;
-        this.isEnabled = true;
+        this.isEnabled = isEnabled;
 
         this.createElements();
         this.attachEventListeners();
+
+        this.turnPagination();
     }
     
     createElements() {
@@ -34,10 +36,6 @@ export default class DatePagination {
         this.buttons_container = document.createElement('div');
         this.textSpan = document.createElement('span');
 
-        this.onOffRadioButton = document.createElement('input');
-        this.onOffRadioButton.type = 'radio';
-        this.onOffRadioButton.checked = true;
-
         this.container.appendChild(this.buttons_container);
         this.buttons_container.appendChild(this.prevButton);
         this.buttons_container.appendChild(this.nextButton);
@@ -46,12 +44,9 @@ export default class DatePagination {
         this.updateTextDate();
 
         this.container.appendChild(this.todayButton);
-
-        this.container.appendChild(this.onOffRadioButton);
     }
 
     updateCurrentDateRange(dateRange) {
-        console.log(dateRange);
         this.currentDateRange = dateRange;
         this.updateTextDate();
     }
@@ -64,7 +59,6 @@ export default class DatePagination {
         this.prevButton.addEventListener('click', () => this.handlePrevClick());
         this.nextButton.addEventListener('click', () => this.handleNextClick());
         this.todayButton.addEventListener('click', () => this.handleTodayClick());
-        this.onOffRadioButton.addEventListener('click', () => this.handleClickOnOff());
     }
 
     handlePrevClick() {
@@ -85,26 +79,33 @@ export default class DatePagination {
         this.onChange();
     }
 
-    handleClickOnOff() {
-        this.isEnabled = !this.isEnabled;
-        this.onOffRadioButton.checked = this.isEnabled;
+    handleClickOnOff(isEnabled) {
+        this.isEnabled = isEnabled;
 
+        this.turnPagination();
+
+        this.onChange();
+    }
+
+    turnPagination() {
         if (this.isEnabled) {
             this.currentDateRange = this.dateRangeForToday;
 
             this.prevButton.classList.remove('disabled');
             this.nextButton.classList.remove('disabled');
             this.todayButton.classList.remove('disabled');
+
+            this.container.classList.remove('display-none');
         } else {
             this.currentDateRange = null;
 
             this.prevButton.classList.add('disabled');
             this.nextButton.classList.add('disabled');
             this.todayButton.classList.add('disabled');
-        }
 
-        this.onChange();
-    }
+            this.container.classList.add('display-none');
+        }
+    };
 
     getRange28DaysToday() {
         const now = new Date();

@@ -22,6 +22,7 @@ export default class GhStudyJournalData {
                     student_name_field_id: null,
                     point_field_id: null,
                     event_date_field_id: null,
+                    isPaginationEnabled: 0,
                     filters_list: [],
                     sorting_type: 'asc',
                     interpretation: [{
@@ -203,6 +204,18 @@ export default class GhStudyJournalData {
                               settingScope.field_model.data_model.app_id = newValue;
                           });
                       },
+                  },
+                  {
+                    type: "ghElement",
+                    property: "data_model.isPaginationEnabled",
+                    data_model() {
+                      return {
+                        field_name: "Items Pagination",
+                        name_space: "Items Pagination",
+                        data_type: "boolean",
+                        data_model: {},
+                      };
+                    }
                   }
                 ],[
                   {

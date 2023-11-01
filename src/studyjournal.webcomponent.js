@@ -25,10 +25,11 @@ class GhStudyJournal extends GhHtmlElement {
     onInit() {
         super.render(html);
 
-        const {journal_app_id} = this.scope.field_model.data_model;
+        const { journal_app_id, isPaginationEnabled } = this.scope.field_model.data_model;
 
-        this.renderPagination();
         this.dataPreparation = new DataPreparation(this.scope);
+
+        this.renderPagination(isPaginationEnabled);
 
         this.updateTableFunction = () => {
             this.dataPreparation.initializeItems().then(() => {
@@ -48,14 +49,14 @@ class GhStudyJournal extends GhHtmlElement {
         gudhub.destroy('gh_items_update', {journal_app_id}, this.updateTableFunction);
     };
 
-    async renderPagination() {
+    async renderPagination(isPaginationEnabled) {
         const container = this.querySelector('.pagination');
 
         const handleOnChangePagination = () => {
             this.updateTable();
         };
 
-        this.datePagination = new DatePagination(container, handleOnChangePagination);
+        this.datePagination = new DatePagination(container, isPaginationEnabled, handleOnChangePagination);
     }
 
     async renderTable() {
@@ -82,7 +83,7 @@ class GhStudyJournal extends GhHtmlElement {
     };
 
     async updateTable() {
-        const dateRange = this.datePagination.currentDateRange;
+        const dateRange = this.datePagination?.currentDateRange;
         const [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations] = await this.dataPreparation.getTableData(dateRange);
 
         if (!uniqueDatesMilliseconds || !students_data || !studentNameMapWithInterpretations) return;

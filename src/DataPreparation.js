@@ -47,6 +47,8 @@ export default class DataPreparation {
         for (const item of items) {
           const { item_id } = item;
       
+          if (item.fields.length === 0) continue;
+
           const student_name_field = item.fields.find(({field_id}) => field_id == student_name_field_id);
 
           const raw_student_name = student_name_field.field_value;
@@ -76,7 +78,7 @@ export default class DataPreparation {
       }
       
     prepareTableData(data) {
-        const {students_data, studentNameMapWithInterpretations} = data; 
+        const {students_data, studentNameMapWithInterpretations} = data;
 
         students_data.sort((a, b) => new Date(a[2]) - new Date(b[2]));
       
