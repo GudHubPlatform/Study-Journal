@@ -1,3 +1,5 @@
+import filterItemsByFilterSettings from "./utils/filterItemsByFilterSettings.js";
+
 export default class DataPreparation {
 
     constructor(scope) {
@@ -29,7 +31,7 @@ export default class DataPreparation {
       
         let items = await gudhub.getItems(journal_app_id, false);
 
-        items = await this.filterItemsByFilterSettings(items);
+        items = await filterItemsByFilterSettings(items, this.scope);
 
         this.items = items;
     }
@@ -124,20 +126,6 @@ export default class DataPreparation {
         });
       
         return [uniqueDates, twoDimensionalArray, studentNameMapWithInterpretations];
-    }
-
-    async filterItemsByFilterSettings(items) {
-      const {filters_list} = this.scope.field_model.data_model;
-
-        const modifiedFilterList = await gudhub.prefilter(filters_list, {
-          element_app_id: this.scope.field_model.data_model.journal_app_id,
-          item_id: this.scope.itemId,
-          app_id: this.scope.field_model.journal_app_id,
-        });
-      
-        const filtered_items = await gudhub.filter(items, modifiedFilterList);
-
-        return filtered_items;
     }
 
     async filterItemsByPagination(items, dateRange) {

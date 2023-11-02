@@ -7,6 +7,7 @@ import 'handsontable/dist/handsontable.full.min.css';
 
 import DataPreparation from "./DataPreparation.js";
 import DatePagination from "./DatePagination.js";
+import filterItemsByFilterSettings from "./utils/filterItemsByFilterSettings.js";
 
 class GhStudyJournal extends GhHtmlElement {
 
@@ -115,6 +116,10 @@ class GhStudyJournal extends GhHtmlElement {
             }
         });
 
+        if (formated_dates.length === 0) {
+            formated_dates.push('');
+        }
+
         // sets dates mm:dd in colHeaders
         this.table.updateSettings({
             colHeaders: ["", ...formated_dates]
@@ -150,7 +155,7 @@ class GhStudyJournal extends GhHtmlElement {
             this.table.setCellMeta(rowIndex, 0, 'metadata', rawName);
         }
 
-        this.sortTable(this.scope.field_model.data_model.sorting_type);
+        // this.sortTable(this.scope.field_model.data_model.sorting_type);
         
         // sets date in milliseconds as metadata in first row
         uniqueDates.map((date, col) => {
@@ -180,10 +185,7 @@ class GhStudyJournal extends GhHtmlElement {
         const { students_app_id, filters_list } = this.scope.field_model.data_model;
         
         let students = await gudhub.getItems(students_app_id, false);
-
-        if (filters_list.length !== 0) {
-            students = await gudhub.filter(students, filters_list);
-        }
+        students = await filterItemsByFilterSettings(students, this.scope);
 
         const { students_app_name_field_id } = this.scope.field_model.data_model;
 
