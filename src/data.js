@@ -22,6 +22,7 @@ export default class GhStudyJournalData {
                     student_name_field_id: null,
                     point_field_id: null,
                     event_date_field_id: null,
+                    tag_field_id: null,
                     isPaginationEnabled: 0,
                     filters_list: [],
                     sorting_type: 'asc',
@@ -125,8 +126,8 @@ export default class GhStudyJournalData {
                         data_model: function () {
                             return {
                                 data_type: 'app',
-                                field_name: 'Points App',
-                                name_space: 'points_app',
+                                field_name: 'Journal App',
+                                name_space: 'journal_app',
                                 data_model: {
                                     current_app: false,
                                     interpretation: [{
@@ -204,6 +205,27 @@ export default class GhStudyJournalData {
                               settingScope.field_model.data_model.app_id = newValue;
                           });
                       },
+                  },
+                  {
+                    type: 'ghElement',
+                    property: 'data_model.tag_field_id',
+                    data_model: function (fieldModel) {
+                      return {
+                          data_type: 'field',
+                          field_name: 'Tag',
+                          name_space: 'tag',
+                          data_model: {
+                              app_id: fieldModel.data_model.journal_app_id
+                          }
+                      }
+                    },
+                    onInit: function (settingScope, fieldModel) {
+                        settingScope.$watch(function () {
+                            return fieldModel.data_model.journal_app_id;
+                        }, function(newValue) {
+                            settingScope.field_model.data_model.app_id = newValue;
+                        });
+                    },
                   },
                   {
                     type: "ghElement",

@@ -74,9 +74,19 @@ class GhStudyJournal extends GhHtmlElement {
             height: 'auto',
             fixedColumnsStart: 1,
             fixedRowsTop: 0,
-            columnHeaderHeight: 45,
+            columnHeaderHeight: 60,
             licenseKey: 'non-commercial-and-evaluation',
             afterOnCellMouseUp: this.createCellClickCallback(),
+            afterGetColHeader: (col, thElement) => {
+                const spanElement = thElement.querySelector('.colHeader');
+                if (spanElement) {
+                    const text = spanElement.textContent.trim();
+                    if (text.length > 5) {
+                        spanElement.textContent = text.split(" ").join("\n");
+                        spanElement.classList.add('writing-mode-inherit');
+                    }
+                }
+            },
             columnSorting: {
                 indicator: false,
                 headerAction: false,
@@ -93,11 +103,17 @@ class GhStudyJournal extends GhHtmlElement {
 
     async updateTable() {
         const dateRange = this.datePagination?.currentDateRange;
-        const [uniqueDatesMilliseconds, students_data, studentNameMapWithInterpretations] = await this.dataPreparation.getTableData(dateRange);
+        const [uniqueDates, students_data, studentNameMapWithInterpretations] = await this.dataPreparation.getTableData(dateRange);
 
-        if (!uniqueDatesMilliseconds || !students_data || !studentNameMapWithInterpretations) return;
+        if (!uniqueDates || !students_data || !studentNameMapWithInterpretations) return;
 
-        const formated_dates = uniqueDatesMilliseconds.map((milliseconds) => this.convertMsToDDMM(milliseconds));
+        const formated_dates = uniqueDates.map((date) => {
+            if (isNaN(date)) {
+                return date;
+            } else {
+                return this.convertMsToDDMM(date);
+            }
+        });
 
         // sets dates mm:dd in colHeaders
         this.table.updateSettings({
@@ -137,8 +153,8 @@ class GhStudyJournal extends GhHtmlElement {
         this.sortTable(this.scope.field_model.data_model.sorting_type);
         
         // sets date in milliseconds as metadata in first row
-        uniqueDatesMilliseconds.map((milliseconds, col) => {
-            this.table.setCellMeta(0, col + 1, 'metadata', milliseconds);
+        uniqueDates.map((date, col) => {
+            this.table.setCellMeta(0, col + 1, 'metadata', date);
         });
     };
 
@@ -161,9 +177,13 @@ class GhStudyJournal extends GhHtmlElement {
     };
 
     async getStudentNamesMapFromStudentsApp() {
-        const { students_app_id } = this.scope.field_model.data_model;
+        const { students_app_id, filters_list } = this.scope.field_model.data_model;
         
-        const students = await gudhub.getItems(students_app_id, false);
+        let students = await gudhub.getItems(students_app_id, false);
+
+        if (filters_list.length !== 0) {
+            students = await gudhub.filter(students, filters_list);
+        }
 
         const { students_app_name_field_id } = this.scope.field_model.data_model;
 
@@ -200,15 +220,34 @@ class GhStudyJournal extends GhHtmlElement {
                 view_id,
                 student_name_field_id,
                 event_date_field_id,
+                tag_field_id
             } = field_model.data_model;
 
             const rawName = this.getCellMeta(row, 0).metadata;
-            const dateInMilliseconds = this.getCellMeta(0, col).metadata;
+
+            const colHeaderMetadata = this.getCellMeta(0, col).metadata;
+            const isTag = isNaN(colHeaderMetadata);
+
+            // if colHeader metadata is NaN, than its tag, dateInMilliseconds will be date from previous colHeader metadata
+            const dateInMilliseconds = isTag
+                ? (() => {
+                    let dateMetadata
+                    let minusIndex = 1;
+
+                    while (isNaN(dateMetadata)) {
+                        dateMetadata = this.getCellMeta(0, col - minusIndex).metadata;
+                        minusIndex++;
+                    }
+
+                    return dateMetadata;
+                })()
+                : colHeaderMetadata;
 
             const items = await gudhub.getItems(journal_app_id, false);
 
             const nameFieldInfo = await gudhub.getField(journal_app_id, student_name_field_id);
             const eventDateFieldInfo = await gudhub.getField(journal_app_id, event_date_field_id);
+            const tagFieldInfo = await gudhub.getField(journal_app_id, tag_field_id);
 
             if (!nameFieldInfo) {
                 return;
@@ -232,6 +271,29 @@ class GhStudyJournal extends GhHtmlElement {
                 "valuesArray": [dateRange]
             }];
 
+            if (isTag) {
+                //its tag, and we need to add filter for it
+                const tagFilter = {
+                    "data_type": tagFieldInfo.data_type,
+                    "field_id": tag_field_id,
+                    "search_type": "equal_and",
+                    "selected_search_option_variable": "Value",
+                    "valuesArray": [colHeaderMetadata]
+                };
+
+                filterList.push(tagFilter);
+            } else {
+                const noTagFilter = {
+                    "data_type": tagFieldInfo.data_type,
+                    "field_id": tag_field_id,
+                    "search_type": "value",
+                    "selected_search_option_variable": "Value",
+                    "valuesArray": ["false"]
+                }
+
+                filterList.push(noTagFilter);
+            }
+
             // gudhub filter used instead of searching item in items
             const filteredItems = await gudhub.filter(items, filterList);
 
@@ -243,6 +305,10 @@ class GhStudyJournal extends GhHtmlElement {
                 const fields = {
                     [student_name_field_id]: rawName,
                     [event_date_field_id]: dateInMilliseconds,
+                }
+
+                if (isTag) {
+                    fields[tag_field_id] = colHeaderMetadata;
                 }
 
                 const fieldModel = {

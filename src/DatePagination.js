@@ -1,5 +1,5 @@
 export default class DatePagination {
-    constructor(container, isEnabled, onChange, onClickOnOff) {
+    constructor(container, isEnabled, onChange) {
         this.container = container;
         this.onChange = onChange;
 

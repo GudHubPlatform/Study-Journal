@@ -99,8 +99,23 @@ gh-study-journal {
     .handsontable {
         font-size: inherit;
 
-        .colHeader {
-            transform: rotate(270deg) translateX(-10px);
+        th {
+            div {
+                height: 100%;
+
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                .colHeader {
+                    writing-mode: vertical-rl;
+
+                    &.writing-mode-inherit {
+                        writing-mode: inherit;
+                    }
+                    white-space: pre-line;
+                }
+            }
         }
 
         .ht_master {
