@@ -17,6 +17,7 @@ export default class GhStudyJournalData {
                 data_model: {
                     students_app_id: null,
                     students_app_name_field_id: null,
+                    students_filters_list: [],
                     journal_app_id: null,
                     view_id: null,
                     student_name_field_id: null,
@@ -24,7 +25,7 @@ export default class GhStudyJournalData {
                     event_date_field_id: null,
                     tag_field_id: null,
                     isPaginationEnabled: 0,
-                    filters_list: [],
+                    points_filters_list: [],
                     sorting_type: 'asc',
                     interpretation: [{
                         src: 'form',
@@ -65,6 +66,7 @@ export default class GhStudyJournalData {
             type: 'general_setting',
             icon: 'menu',
             columns_list: [
+                [],
                 [
                   {
                     title: 'Students Settings',
@@ -113,6 +115,31 @@ export default class GhStudyJournalData {
                             settingScope.field_model.data_model.app_id = newValue;
                         });
                       },
+                  },
+                  {
+                    title: 'Students Filter',
+                    type: 'header'
+                  },{
+                    type: "html",
+                    onInit: function (settingScope) {
+                      settingScope.$watch(
+                        function () {
+                          return settingScope.fieldModel.data_model.students_app_id;
+                        },
+                        function (newValue) {
+                          settingScope.field_model.data_model.app_id = newValue;
+                        }
+                      );
+                    },
+                    data_model: function (fieldModel) {
+                      return {
+                        recipient: {
+                          app_id: fieldModel.data_model.students_app_id,
+                        },
+                      };
+                    },
+                    control:
+                      '<gh-filter gh-filter-data-model="field_model" filter-list="fieldModel.data_model.students_filters_list" gh-mode="variable"></gh-filter>',
                   },
                 ],
                 [
@@ -238,6 +265,53 @@ export default class GhStudyJournalData {
                         data_model: {},
                       };
                     }
+                  },
+                  {
+                    title: 'Journal Filter',
+                    type: 'header'
+                  },{
+                    type: "html",
+                    onInit: function (settingScope) {
+                      settingScope.$watch(
+                        function () {
+                          return settingScope.fieldModel.data_model.journal_app_id;
+                        },
+                        function (newValue) {
+                          settingScope.field_model.data_model.app_id = newValue;
+                        }
+                      );
+                    },
+                    data_model: function (fieldModel) {
+                      return {
+                        recipient: {
+                          app_id: fieldModel.data_model.journal_app_id,
+                        },
+                      };
+                    },
+                    control:
+                      '<gh-filter gh-filter-data-model="field_model" filter-list="fieldModel.data_model.points_filters_list" gh-mode="variable"></gh-filter>',
+                  },{
+                    type: "ghElement",
+                    property: "data_model.sorting_type",
+                    data_model() {
+                      return {
+                        field_name: "Sorting Type",
+                        name_space: "sorting_type",
+                        data_type: "text_opt",
+                        data_model: {
+                          options: [
+                            {
+                              name: "Ascending",
+                              value: "asc",
+                            },
+                            {
+                              name: "Descending",
+                              value: "desc",
+                            },
+                          ]
+                        },
+                      };
+                    }
                   }
                 ],[
                   {
@@ -261,58 +335,6 @@ export default class GhStudyJournalData {
                         field_name: 'View name',
                         name_space: 'view_name',
                         data_type: 'view_list'
-                      };
-                    }
-                  }
-                ],
-                [{
-                    title: 'Items Filter',
-                    type: 'header'
-                  },{
-                    type: "html",
-                    onInit: function (settingScope) {
-                      settingScope.$watch(
-                        function () {
-                          return settingScope.fieldModel.data_model.journal_app_id;
-                        },
-                        function (newValue) {
-                          settingScope.field_model.data_model.app_id = newValue;
-                        }
-                      );
-                    },
-                    data_model: function (fieldModel) {
-                      return {
-                        recipient: {
-                          app_id: fieldModel.data_model.journal_app_id,
-                        },
-                      };
-                    },
-                    control:
-                      '<gh-filter gh-filter-data-model="field_model" filter-list="fieldModel.data_model.filters_list" gh-mode="variable"></gh-filter>',
-                  },
-                  {
-                    title: 'Items Sort',
-                    type: 'header'
-                  },{
-                    type: "ghElement",
-                    property: "data_model.sorting_type",
-                    data_model() {
-                      return {
-                        field_name: "Sorting Type",
-                        name_space: "sorting_type",
-                        data_type: "text_opt",
-                        data_model: {
-                          options: [
-                            {
-                              name: "Ascending",
-                              value: "asc",
-                            },
-                            {
-                              name: "Descending",
-                              value: "desc",
-                            },
-                          ]
-                        },
                       };
                     }
                   }

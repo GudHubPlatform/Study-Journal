@@ -116,10 +116,6 @@ class GhStudyJournal extends GhHtmlElement {
             }
         });
 
-        if (formated_dates.length === 0) {
-            formated_dates.push('');
-        }
-
         // sets dates mm:dd in colHeaders
         this.table.updateSettings({
             colHeaders: ["", ...formated_dates]
@@ -155,7 +151,7 @@ class GhStudyJournal extends GhHtmlElement {
             this.table.setCellMeta(rowIndex, 0, 'metadata', rawName);
         }
 
-        // this.sortTable(this.scope.field_model.data_model.sorting_type);
+        this.sortTable(this.scope.field_model.data_model.sorting_type);
         
         // sets date in milliseconds as metadata in first row
         uniqueDates.map((date, col) => {
@@ -182,10 +178,10 @@ class GhStudyJournal extends GhHtmlElement {
     };
 
     async getStudentNamesMapFromStudentsApp() {
-        const { students_app_id, filters_list } = this.scope.field_model.data_model;
+        const { students_app_id, students_filters_list } = this.scope.field_model.data_model;
         
         let students = await gudhub.getItems(students_app_id, false);
-        students = await filterItemsByFilterSettings(students, this.scope);
+        students = await filterItemsByFilterSettings(students, this.scope, students_filters_list);
 
         const { students_app_name_field_id } = this.scope.field_model.data_model;
 
@@ -194,7 +190,7 @@ class GhStudyJournal extends GhHtmlElement {
         for (const student of students) {
             const raw_student_name = `${students_app_id}.${student.item_id}`;
             const student_name = await gudhub.getInterpretationById(students_app_id, student.item_id, students_app_name_field_id, 'value');
-            
+
             studentsNamesMap.set(raw_student_name, student_name);
         }
 

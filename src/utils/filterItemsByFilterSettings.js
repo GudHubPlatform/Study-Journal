@@ -1,6 +1,4 @@
-export default async function filterItemsByFilterSettings(items, scope) {
-    const {filters_list} = scope.field_model.data_model;
-
+export default async function filterItemsByFilterSettings(items, scope, filters_list) {
     const modifiedFilterList = await gudhub.prefilter(filters_list, {
     element_app_id: scope.appId,
     item_id: scope.itemId,

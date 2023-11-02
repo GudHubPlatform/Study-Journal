@@ -23,16 +23,14 @@ export default class DataPreparation {
     };
 
     async initializeItems() {
-        const { journal_app_id } = this.scope.field_model.data_model;
+        const { journal_app_id, points_filters_list } = this.scope.field_model.data_model;
       
         if (!journal_app_id) {
           return;
         }
       
         let items = await gudhub.getItems(journal_app_id, false);
-
-        items = await filterItemsByFilterSettings(items, this.scope);
-
+        items = await filterItemsByFilterSettings(items, this.scope, points_filters_list);
         this.items = items;
     }
 
