@@ -69,25 +69,26 @@ class GhStudyJournal extends GhHtmlElement {
             };
         }
 
+        const updateColHeaderTH = (col, thElement) => {
+            const spanElement = thElement.querySelector('.colHeader');
+            if (spanElement) {
+                const text = spanElement.textContent.trim();
+                if (text.length > 5) {
+                    spanElement.textContent = text.split(" ").join("\n");
+                }
+            }
+        };
+
         this.table = new Handsontable(container, {
             rowHeaders: true,
             width: '100%',
             height: 'auto',
             fixedColumnsStart: 1,
             fixedRowsTop: 0,
-            columnHeaderHeight: 60,
+            columnHeaderHeight: 90,
             licenseKey: 'non-commercial-and-evaluation',
             afterOnCellMouseUp: this.createCellClickCallback(),
-            afterGetColHeader: (col, thElement) => {
-                const spanElement = thElement.querySelector('.colHeader');
-                if (spanElement) {
-                    const text = spanElement.textContent.trim();
-                    if (text.length > 5) {
-                        spanElement.textContent = text.split(" ").join("\n");
-                        spanElement.classList.add('writing-mode-inherit');
-                    }
-                }
-            },
+            afterGetColHeader: updateColHeaderTH,
             columnSorting: {
                 indicator: false,
                 headerAction: false,
@@ -122,10 +123,7 @@ class GhStudyJournal extends GhHtmlElement {
         });
 
         this.table.loadData(students_data);
-
-        // get rows with students names from studentList (they are not in journal app, because they dont have mark)
-        const studentNamesMapFromList = await this.getStudentNamesMapFromStudentsApp();
-
+        
         // Iterate through rows and set rawData as metadata and interpretatedData as cellData for the first column
         const rowCount = this.table.countRows();
 
@@ -134,21 +132,8 @@ class GhStudyJournal extends GhHtmlElement {
 
             const metadata = rowData;
             
-            //delete students with marks from general names list
-            if (studentNamesMapFromList.has(rowData)) studentNamesMapFromList.delete(rowData);
-
             this.table.setDataAtCell(row, 0, studentNameMapWithInterpretations.get(rowData));
             this.table.setCellMeta(row, 0, 'metadata', metadata);
-        }
-
-        // add student name row with out marks
-        for (const [rawName, nameValue] of studentNamesMapFromList) {
-            const rowIndex = this.table.countRows();
-
-            this.table.alter('insert_row_below', rowIndex);
-
-            this.table.setDataAtCell(rowIndex, 0, nameValue);
-            this.table.setCellMeta(rowIndex, 0, 'metadata', rawName);
         }
 
         this.sortTable(this.scope.field_model.data_model.sorting_type);
@@ -176,26 +161,6 @@ class GhStudyJournal extends GhHtmlElement {
     
             return [day, month].join(date_separator);
     };
-
-    async getStudentNamesMapFromStudentsApp() {
-        const { students_app_id, students_filters_list } = this.scope.field_model.data_model;
-        
-        let students = await gudhub.getItems(students_app_id, false);
-        students = await filterItemsByFilterSettings(students, this.scope, students_filters_list);
-
-        const { students_app_name_field_id } = this.scope.field_model.data_model;
-
-        const studentsNamesMap = new Map();
-
-        for (const student of students) {
-            const raw_student_name = `${students_app_id}.${student.item_id}`;
-            const student_name = await gudhub.getInterpretationById(students_app_id, student.item_id, students_app_name_field_id, 'value');
-
-            studentsNamesMap.set(raw_student_name, student_name);
-        }
-
-        return studentsNamesMap;
-    }
 
     createCellClickCallback() {
         const {field_model} = this.scope;

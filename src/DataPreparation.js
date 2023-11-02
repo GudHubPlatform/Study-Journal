@@ -12,12 +12,13 @@ export default class DataPreparation {
         if (!this.items) await this.initializeItems();
         //filter by user pagination
         const filtered_items = await this.filterItemsByPagination(this.items, dateRange);
-        const interpretated_visual_items = await this.getInterpretatedData(filtered_items);
+        const interpretated_filtered_items = await this.getInterpretatedData(filtered_items);
 
-        if (!interpretated_visual_items) return [];
+        // get students_names from students_app
+        const studentNameMapWithInterpretations = await this.getStudentNamesMapFromStudentsApp();
 
         //if interpretatedData = undefined, then take fake data (like demo view)
-        const [uniqueDates, students_data, studentNameMapWithInterpretations] = this.prepareTableData(interpretated_visual_items);
+        const [uniqueDates, students_data] = this.prepareTableData(interpretated_filtered_items, studentNameMapWithInterpretations);
     
         return [uniqueDates, students_data, studentNameMapWithInterpretations];
     };
@@ -42,8 +43,7 @@ export default class DataPreparation {
         }
 
         const students_data = [];
-        const studentNameMapWithInterpretations = new Map(); // To store: non-interpretated name => interpretated name
-      
+
         for (const item of items) {
           const { item_id } = item;
       
@@ -71,18 +71,16 @@ export default class DataPreparation {
       
           students_data.push(student_values);
 
-          const student_name = await gudhub.getInterpretationById(journal_app_id, item_id, student_name_field_id, 'value');
+          // const student_name = await gudhub.getInterpretationById(journal_app_id, item_id, student_name_field_id, 'value');
 
-          // Save the non-interpreted name (to add it as metadata in namecell) alongside the interpreted one
-          studentNameMapWithInterpretations.set(raw_student_name, student_name);
+          // // Save the non-interpreted name (to add it as metadata in namecell) alongside the interpreted one
+          // studentNameMapWithInterpretations.set(raw_student_name, student_name);
         }
       
-        return { students_data, studentNameMapWithInterpretations };
+        return students_data;
       }
       
-    prepareTableData(data) {
-        const {students_data, studentNameMapWithInterpretations} = data;
-
+    prepareTableData(students_data, studentNameMapWithInterpretations) {
         students_data.sort((a, b) => new Date(a[2]) - new Date(b[2]));
       
         const uniqueDatesSet = new Set();
@@ -97,12 +95,11 @@ export default class DataPreparation {
         })
 
         const uniqueDates = [...uniqueDatesSet];
-        const uniqueStudentNames = [...new Set(students_data.map(item => item[0]))];
       
         const twoDimensionalArray = [];
       
         // Iterate through each unique student name.
-        uniqueStudentNames.forEach(rawStudentName => {
+        studentNameMapWithInterpretations.forEach( (studentName, rawStudentName) => {
           // Create a row with the student's name.
           const row = [rawStudentName];
       
@@ -123,8 +120,28 @@ export default class DataPreparation {
           twoDimensionalArray.push(row);
         });
       
-        return [uniqueDates, twoDimensionalArray, studentNameMapWithInterpretations];
+        return [uniqueDates, twoDimensionalArray];
     }
+
+    async getStudentNamesMapFromStudentsApp() {
+      const { students_app_id, students_filters_list } = this.scope.field_model.data_model;
+      
+      let students = await gudhub.getItems(students_app_id, false);
+      students = await filterItemsByFilterSettings(students, this.scope, students_filters_list);
+
+      const { students_app_name_field_id } = this.scope.field_model.data_model;
+
+      const studentsNamesMap = new Map();
+
+      for (const student of students) {
+          const raw_student_name = `${students_app_id}.${student.item_id}`;
+          const student_name = await gudhub.getInterpretationById(students_app_id, student.item_id, students_app_name_field_id, 'value');
+
+          studentsNamesMap.set(raw_student_name, student_name);
+      }
+
+      return studentsNamesMap;
+    };
 
     async filterItemsByPagination(items, dateRange) {
 

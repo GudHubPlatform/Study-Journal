@@ -19,7 +19,6 @@ export default class GhStudyJournalData {
                     students_app_name_field_id: null,
                     students_filters_list: [],
                     journal_app_id: null,
-                    view_id: null,
                     student_name_field_id: null,
                     point_field_id: null,
                     event_date_field_id: null,
@@ -27,6 +26,7 @@ export default class GhStudyJournalData {
                     isPaginationEnabled: 0,
                     points_filters_list: [],
                     sorting_type: 'asc',
+                    view_id: null,
                     interpretation: [{
                         src: 'form',
                         id: 'default',
