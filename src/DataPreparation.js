@@ -50,6 +50,8 @@ export default class DataPreparation {
           if (item.fields.length === 0) continue;
 
           const student_name_field = item.fields.find(({field_id}) => field_id == student_name_field_id);
+          
+          if (!student_name_field) continue;
 
           const raw_student_name = student_name_field.field_value;
           const point = await gudhub.getInterpretationById(journal_app_id, item_id, point_field_id, 'value');
@@ -70,11 +72,6 @@ export default class DataPreparation {
           }
       
           students_data.push(student_values);
-
-          // const student_name = await gudhub.getInterpretationById(journal_app_id, item_id, student_name_field_id, 'value');
-
-          // // Save the non-interpreted name (to add it as metadata in namecell) alongside the interpreted one
-          // studentNameMapWithInterpretations.set(raw_student_name, student_name);
         }
       
         return students_data;
