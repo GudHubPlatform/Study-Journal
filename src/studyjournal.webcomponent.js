@@ -73,7 +73,7 @@ class GhStudyJournal extends GhHtmlElement {
 	}
 
 	async renderTable() {
-		const container = this.querySelector(".table");
+		const container = this.querySelector(".journal-table");
 
 		const customCyrillicCompareFactory = function (sortOrder) {
 			return function customCyrillicCompare(value, nextValue) {

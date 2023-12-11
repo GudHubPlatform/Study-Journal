@@ -96,6 +96,11 @@ gh-study-journal {
 		}
 	}
 
+	.journal-table {
+		position: relative;
+		z-index: 0;
+	}
+
 	.handsontable {
 		font-size: inherit;
 
