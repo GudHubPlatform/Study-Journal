@@ -14,11 +14,13 @@ export default class GhStudyJournalData {
 				field_value: "",
 				data_type: "study_journal",
 				data_model: {
+					journal_mode: 'subject',
 					students_app_id: null,
 					students_app_name_field_id: null,
 					students_filters_list: [],
 					journal_app_id: null,
 					student_name_field_id: null,
+					subject_field_id: null,
 					point_field_id: null,
 					event_date_field_id: null,
 					tag_field_id: null,
@@ -70,7 +72,31 @@ export default class GhStudyJournalData {
 				type: "general_setting",
 				icon: "menu",
 				columns_list: [
-					[],
+					[
+						{
+							type: "ghElement",
+							property: "data_model.journal_mode",
+							data_model() {
+								return {
+									field_name: "Journal mode",
+									name_space: "journal_mode",
+									data_type: "text_opt",
+									data_model: {
+										options: [
+											{
+												name: "Subject",
+												value: "subject",
+											},
+											{
+												name: "Student",
+												value: "student",
+											},
+										],
+									},
+								};
+							},
+						},
+					],
 					[
 						{
 							title: "Students Settings",
@@ -196,6 +222,33 @@ export default class GhStudyJournalData {
 									data_type: "field",
 									field_name: "Student Name",
 									name_space: "student_name",
+									data_model: {
+										app_id: fieldModel.data_model
+											.journal_app_id,
+									},
+								};
+							},
+							onInit: function (settingScope, fieldModel) {
+								settingScope.$watch(
+									function () {
+										return fieldModel.data_model
+											.journal_app_id;
+									},
+									function (newValue) {
+										settingScope.field_model.data_model.app_id =
+											newValue;
+									}
+								);
+							},
+						},
+						{
+							type: "ghElement",
+							property: "data_model.subject_field_id",
+							data_model: function (fieldModel) {
+								return {
+									data_type: "field",
+									field_name: "Subject",
+									name_space: "subject",
 									data_model: {
 										app_id: fieldModel.data_model
 											.journal_app_id,

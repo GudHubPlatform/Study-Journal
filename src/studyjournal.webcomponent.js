@@ -5,9 +5,12 @@ import "./style.scss";
 import Handsontable from "handsontable";
 import "handsontable/dist/handsontable.full.min.css";
 
-import DataPreparation from "./DataPreparation.js";
+import SubjectDataPreparation from "./DataPreparation/Subject.js";
+import StudentDataPreparation from "./DataPreparation/Student.js";
+
+import DataPreparation from './DataPreparation/index.js';
 import DatePagination from "./DatePagination.js";
-import filterItemsByFilterSettings from "./utils/filterItemsByFilterSettings.js";
+import { FilterItems } from "./utils/FilterItems.js";
 
 class GhStudyJournal extends GhHtmlElement {
 	// Constructor with super() is required for native web component initialization
@@ -25,10 +28,10 @@ class GhStudyJournal extends GhHtmlElement {
 	onInit() {
 		super.render(html);
 
-		const { journal_app_id, isPaginationEnabled } =
+		const { journal_mode, journal_app_id, isPaginationEnabled } =
 			this.scope.field_model.data_model;
 
-		this.dataPreparation = new DataPreparation(this.scope);
+		this.dataPreparation = new DataPreparation[journal_mode](this.scope);
 
 		this.renderPagination(isPaginationEnabled);
 
@@ -119,13 +122,13 @@ class GhStudyJournal extends GhHtmlElement {
 
 	async updateTable() {
 		const dateRange = this.datePagination?.currentDateRange;
-		const [uniqueDates, students_data, studentNameMapWithInterpretations] =
+		const [uniqueDates, students_data, mapRowHeaderItemRefIdAndInterpretation] =
 			await this.dataPreparation.getTableData(dateRange);
 
 		if (
 			!uniqueDates ||
 			!students_data ||
-			!studentNameMapWithInterpretations
+			!mapRowHeaderItemRefIdAndInterpretation
 		)
 			return;
 
@@ -133,7 +136,7 @@ class GhStudyJournal extends GhHtmlElement {
 			if (isNaN(date)) {
 				return date;
 			} else {
-				return this.convertMsToDDMM(date);
+				return convertMsToDDMM(date);
 			}
 		});
 
@@ -155,7 +158,7 @@ class GhStudyJournal extends GhHtmlElement {
 			this.table.setDataAtCell(
 				row,
 				0,
-				studentNameMapWithInterpretations.get(rowData)
+				mapRowHeaderItemRefIdAndInterpretation.get(rowData)
 			);
 			this.table.setCellMeta(row, 0, "metadata", metadata);
 		}
@@ -176,18 +179,9 @@ class GhStudyJournal extends GhHtmlElement {
 		this.table.getPlugin("columnSorting").sort(options);
 	}
 
-	convertMsToDDMM(milliseconds) {
-		const date_separator = "/";
-
-		const date = new Date(milliseconds);
-		const day = date.getDate();
-		const month = date.getMonth() + 1;
-
-		return [day, month].join(date_separator);
-	}
-
 	createCellClickCallback() {
-		const { field_model } = this.scope;
+		const { scope } = this;
+		const dataPreparation = this.dataPreparation;
 
 		return async function findFieldByCell(event, coords) {
 			//check for mouse left button click
@@ -198,7 +192,7 @@ class GhStudyJournal extends GhHtmlElement {
 			const { row } = coords;
 			const { col } = coords;
 
-			// avoid interaction with colHeaders and first column (student names)
+			// avoid interaction with colHeaders and first column (row names)
 			if (row < 0 || col < 1) {
 				return;
 			}
@@ -209,9 +203,9 @@ class GhStudyJournal extends GhHtmlElement {
 				student_name_field_id,
 				event_date_field_id,
 				tag_field_id,
-			} = field_model.data_model;
+			} = scope.field_model.data_model;
 
-			const rawName = this.getCellMeta(row, 0).metadata;
+			const rowMetadata = this.getCellMeta(row, 0).metadata;
 
 			const colHeaderMetadata = this.getCellMeta(0, col).metadata;
 			const isTag = isNaN(colHeaderMetadata);
@@ -236,10 +230,6 @@ class GhStudyJournal extends GhHtmlElement {
 
 			const items = await gudhub.getItems(journal_app_id, false);
 
-			const nameFieldInfo = await gudhub.getField(
-				journal_app_id,
-				student_name_field_id
-			);
 			const eventDateFieldInfo = await gudhub.getField(
 				journal_app_id,
 				event_date_field_id
@@ -249,23 +239,12 @@ class GhStudyJournal extends GhHtmlElement {
 				tag_field_id
 			);
 
-			if (!nameFieldInfo) {
-				return;
-			}
-
 			const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
 			const dateRange = `${dateInMilliseconds}:${
 				dateInMilliseconds + oneDayInMilliseconds
 			}`;
 
 			const filterList = [
-				{
-					data_type: nameFieldInfo.data_type,
-					field_id: student_name_field_id,
-					search_type: "equal_and",
-					selected_search_option_variable: "Value",
-					valuesArray: [rawName],
-				},
 				{
 					data_type: eventDateFieldInfo.data_type,
 					field_id: event_date_field_id,
@@ -274,6 +253,44 @@ class GhStudyJournal extends GhHtmlElement {
 					valuesArray: [dateRange],
 				},
 			];
+
+			if (dataPreparation instanceof SubjectDataPreparation) {
+				const nameFieldInfo = await gudhub.getField(
+					journal_app_id,
+					student_name_field_id
+				);
+
+				if (!nameFieldInfo) {
+					return;
+				}
+				const nameFilter = {
+					data_type: nameFieldInfo.data_type,
+					field_id: student_name_field_id,
+					search_type: "equal_and",
+					selected_search_option_variable: "Value",
+					valuesArray: [rowMetadata],
+				};
+				filterList.push(nameFilter);
+			} else if (dataPreparation instanceof StudentDataPreparation) {
+				const { subject_field_id } = scope.field_model.data_model;
+				const subjectFieldInfo = await gudhub.getField(
+					journal_app_id,
+					subject_field_id
+				);
+
+				if (!subjectFieldInfo) {
+					return;
+				}
+				const subjectFilter = {
+					data_type: 'item_ref',
+					field_id: subject_field_id,
+					search_type: "equal_or",
+					selected_search_option_variable: "Value",
+					valuesArray: [rowMetadata],
+				};
+
+				filterList.push(subjectFilter);
+			}
 
 			if (isTag) {
 				//its tag, and we need to add filter for it
@@ -298,8 +315,10 @@ class GhStudyJournal extends GhHtmlElement {
 				filterList.push(noTagFilter);
 			}
 
+			const { points_filters_list } = scope.field_model.data_model;
+			const filteredItemsBySettingsFilter = await FilterItems.ByFilterSettings(items, scope, points_filters_list);
 			// gudhub filter used instead of searching item in items
-			const filteredItems = await gudhub.filter(items, filterList);
+			const filteredItems = await gudhub.filter(filteredItemsBySettingsFilter, filterList);
 
 			// viewId of item edit form
 			const viewId = view_id;
@@ -307,7 +326,7 @@ class GhStudyJournal extends GhHtmlElement {
 			// fields in item are objects in array, but gudhub create/update item needs fields in object ({ fieldId : value })
 			if (filteredItems.length === 0) {
 				const fields = {
-					[student_name_field_id]: rawName,
+					[student_name_field_id]: rowMetadata,
 					[event_date_field_id]: dateInMilliseconds,
 				};
 
@@ -401,6 +420,16 @@ function showGhDialog(fieldModel) {
 			},
 		],
 	});
+}
+
+function convertMsToDDMM(milliseconds) {
+	const date_separator = "/";
+
+	const date = new Date(milliseconds);
+	const day = date.getDate();
+	const month = date.getMonth() + 1;
+
+	return [day, month].join(date_separator);
 }
 
 // Register web component only if it is not registered yet

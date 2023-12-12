@@ -1,6 +1,5 @@
-import filterItemsByFilterSettings from "./utils/filterItemsByFilterSettings.js";
-
-export default class DataPreparation {
+import { FilterItems } from "../utils/FilterItems.js";
+export default class SubjectDataPreparation {
 	constructor(scope) {
 		this.scope = scope;
 		this.interpretatedData;
@@ -10,8 +9,9 @@ export default class DataPreparation {
 	async getTableData(dateRange) {
 		if (!this.items) await this.initializeItems();
 		//filter by user pagination
-		const filtered_items = await this.filterItemsByPagination(
+		const filtered_items = await FilterItems.ByPagination(
 			this.items,
+			this.scope,
 			dateRange
 		);
 		const interpretated_filtered_items = await this.getInterpretatedData(
@@ -40,7 +40,7 @@ export default class DataPreparation {
 		}
 
 		let items = await gudhub.getItems(journal_app_id, false);
-		items = await filterItemsByFilterSettings(
+		items = await FilterItems.ByFilterSettings(
 			items,
 			this.scope,
 			points_filters_list
@@ -168,7 +168,6 @@ export default class DataPreparation {
 					// Add the student to the row or an empty string if no student is found.
 					row.push(student ? student[1] : "");
 				});
-
 				twoDimensionalArray.push(row);
 			}
 		);
@@ -181,7 +180,7 @@ export default class DataPreparation {
 			this.scope.field_model.data_model;
 
 		let students = await gudhub.getItems(students_app_id, false);
-		students = await filterItemsByFilterSettings(
+		students = await FilterItems.ByFilterSettings(
 			students,
 			this.scope,
 			students_filters_list
@@ -205,37 +204,5 @@ export default class DataPreparation {
 		}
 
 		return studentsNamesMap;
-	}
-
-	async filterItemsByPagination(items, dateRange) {
-		if (!dateRange) return items;
-
-		const { journal_app_id, event_date_field_id } =
-			this.scope.field_model.data_model;
-
-		const eventDateFieldInfo = await gudhub.getField(
-			journal_app_id,
-			event_date_field_id
-		);
-
-		if (!eventDateFieldInfo) {
-			return items;
-		}
-
-		const { start, end } = dateRange;
-
-		const filterList = [
-			{
-				data_type: eventDateFieldInfo.data_type,
-				field_id: event_date_field_id,
-				search_type: "range",
-				selected_search_option_variable: "Value",
-				valuesArray: [`${start}: ${end}`],
-			},
-		];
-
-		const filteredItems = await gudhub.filter(items, filterList);
-
-		return filteredItems;
 	}
 }
