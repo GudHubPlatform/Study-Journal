@@ -8,392 +8,386 @@ import "handsontable/dist/handsontable.full.min.css";
 import SubjectDataPreparation from "./DataPreparation/Subject.js";
 import StudentDataPreparation from "./DataPreparation/Student.js";
 
-import DataPreparation from './DataPreparation/index.js';
+import DataPreparation from "./DataPreparation/index.js";
 import DatePagination from "./DatePagination.js";
 import { FilterItems } from "./utils/FilterItems.js";
 
 class GhStudyJournal extends GhHtmlElement {
-	// Constructor with super() is required for native web component initialization
+  // Constructor with super() is required for native web component initialization
 
-	constructor() {
-		super();
-		this.table;
-		this.dataPreparation;
-		this.datePagination;
-		this.updateTableFunction;
-	}
+  constructor() {
+    super();
+    this.table;
+    this.dataPreparation;
+    this.datePagination;
+    this.updateTableFunction;
+  }
 
-	// onInit() is called after parent gh-element scope is ready
+  // onInit() is called after parent gh-element scope is ready
 
-	onInit() {
-		super.render(html);
+  onInit() {
+    super.render(html);
 
-		const { journal_mode, journal_app_id, isPaginationEnabled } =
-			this.scope.field_model.data_model;
+    const { journal_mode, journal_app_id, isPaginationEnabled } =
+      this.scope.field_model.data_model;
 
-		this.dataPreparation = new DataPreparation[journal_mode](this.scope);
+    this.dataPreparation = new DataPreparation[journal_mode](this.scope);
 
-		this.renderPagination(isPaginationEnabled);
+    this.renderPagination(isPaginationEnabled);
 
-		this.updateTableFunction = () => {
-			this.dataPreparation.initializeItems().then(() => {
-				this.updateTable();
-			});
-		};
+    this.updateTableFunction = () => {
+      this.dataPreparation.initializeItems().then(() => {
+        this.updateTable();
+      });
+    };
 
-		gudhub.on(
-			"gh_items_update",
-			{ journal_app_id },
-			this.updateTableFunction
-		);
+    gudhub.on("gh_items_update", { journal_app_id }, this.updateTableFunction);
 
-		this.renderTable();
-	}
+    this.renderTable();
+  }
 
-	// disconnectedCallback() is called after the component is destroyed
-	disconnectedCallback() {
-		const { journal_app_id } = this.scope.field_model.data_model;
+  // disconnectedCallback() is called after the component is destroyed
+  disconnectedCallback() {
+    const { journal_app_id } = this.scope.field_model.data_model;
 
-		gudhub.destroy(
-			"gh_items_update",
-			{ journal_app_id },
-			this.updateTableFunction
-		);
-	}
+    gudhub.destroy(
+      "gh_items_update",
+      { journal_app_id },
+      this.updateTableFunction,
+    );
+  }
 
-	async renderPagination(isPaginationEnabled) {
-		const container = this.querySelector(".pagination");
+  async renderPagination(isPaginationEnabled) {
+    const container = this.querySelector(".pagination");
 
-		const handleOnChangePagination = () => {
-			this.updateTable();
-		};
+    const handleOnChangePagination = () => {
+      this.updateTable();
+    };
 
-		this.datePagination = new DatePagination(
-			container,
-			isPaginationEnabled,
-			handleOnChangePagination
-		);
-	}
+    this.datePagination = new DatePagination(
+      container,
+      isPaginationEnabled,
+      handleOnChangePagination,
+    );
+  }
 
-	async renderTable() {
-		const container = this.querySelector(".journal-table");
+  async renderTable() {
+    const container = this.querySelector(".journal-table");
 
-		const customCyrillicCompareFactory = function (sortOrder) {
-			return function customCyrillicCompare(value, nextValue) {
-				return (
-					value.localeCompare(nextValue) *
-					(sortOrder === "asc" ? 1 : -1)
-				);
-			};
-		};
+    const customCyrillicCompareFactory = function (sortOrder) {
+      return function customCyrillicCompare(value, nextValue) {
+        return value.localeCompare(nextValue) * (sortOrder === "asc" ? 1 : -1);
+      };
+    };
 
-		const updateColHeaderTH = (col, thElement) => {
-			const spanElement = thElement.querySelector(".colHeader");
-			if (spanElement) {
-				const text = spanElement.textContent.trim();
-				if (text.length > 5) {
-					spanElement.textContent = text.split(" ").join("\n");
-				}
-			}
-		};
+    const updateColHeaderTH = (col, thElement) => {
+      const spanElement = thElement.querySelector(".colHeader");
+      if (spanElement) {
+        const text = spanElement.textContent.trim();
+        if (text.length > 5) {
+          spanElement.textContent = text.split(" ").join("\n");
+        }
+      }
+    };
 
-		this.table = new Handsontable(container, {
-			rowHeaders: true,
-			width: "100%",
-			height: "auto",
-			fixedColumnsStart: 1,
-			fixedRowsTop: 0,
-			columnHeaderHeight: 90,
-			licenseKey: "non-commercial-and-evaluation",
-			afterOnCellMouseUp: this.createCellClickCallback(),
-			afterGetColHeader: updateColHeaderTH,
-			columnSorting: {
-				indicator: false,
-				headerAction: false,
-				compareFunctionFactory: (sortOrder) => {
-					return customCyrillicCompareFactory(sortOrder);
-				},
-			},
-		});
+    this.table = new Handsontable(container, {
+      rowHeaders: true,
+      width: "100%",
+      height: "auto",
+      fixedColumnsStart: 1,
+      fixedRowsTop: 0,
+      columnHeaderHeight: 90,
+      licenseKey: "non-commercial-and-evaluation",
+      afterOnCellMouseUp: this.createCellClickCallback(),
+      afterGetColHeader: updateColHeaderTH,
+      columnSorting: {
+        indicator: false,
+        headerAction: false,
+        compareFunctionFactory: (sortOrder) => {
+          return customCyrillicCompareFactory(sortOrder);
+        },
+      },
+    });
 
-		// set table data after table creation
-		this.updateTable();
-	}
+    // set table data after table creation
+    this.updateTable();
+  }
 
-	async updateTable() {
-		const dateRange = this.datePagination?.currentDateRange;
-		const [uniqueDates, students_data, mapRowHeaderItemRefIdAndInterpretation] =
-			await this.dataPreparation.getTableData(dateRange);
+  async updateTable() {
+    const dateRange = this.datePagination?.currentDateRange;
+    const [uniqueDates, students_data, mapRowHeaderItemRefIdAndInterpretation] =
+      await this.dataPreparation.getTableData(dateRange);
 
-		if (
-			!uniqueDates ||
-			!students_data ||
-			!mapRowHeaderItemRefIdAndInterpretation
-		)
-			return;
+    if (
+      !uniqueDates ||
+      !students_data ||
+      !mapRowHeaderItemRefIdAndInterpretation
+    )
+      return;
 
-		const formated_dates = uniqueDates.map((date) => {
-			if (isNaN(date)) {
-				return date;
-			} else {
-				return convertMsToDDMM(date);
-			}
-		});
+    const formated_dates = uniqueDates.map((date) => {
+      if (isNaN(date)) {
+        return date;
+      } else {
+        return convertMsToDDMM(date);
+      }
+    });
 
-		// sets dates mm:dd in colHeaders
-		this.table.updateSettings({
-			colHeaders: ["", ...formated_dates],
-		});
+    // sets dates mm:dd in colHeaders
+    this.table.updateSettings({
+      colHeaders: ["", ...formated_dates],
+    });
 
-		this.table.loadData(students_data);
+    this.table.loadData(students_data);
 
-		// Iterate through rows and set rawData as metadata and interpretatedData as cellData for the first column
-		const rowCount = this.table.countRows();
+    // Iterate through rows and set rawData as metadata and interpretatedData as cellData for the first column
+    const rowCount = this.table.countRows();
 
-		for (let row = 0; row < rowCount; row++) {
-			const rowData = this.table.getDataAtCell(row, 0);
+    for (let row = 0; row < rowCount; row++) {
+      const rowData = this.table.getDataAtCell(row, 0);
 
-			const metadata = rowData;
+      const metadata = rowData;
 
-			this.table.setDataAtCell(
-				row,
-				0,
-				mapRowHeaderItemRefIdAndInterpretation.get(rowData)
-			);
-			this.table.setCellMeta(row, 0, "metadata", metadata);
-		}
+      this.table.setDataAtCell(
+        row,
+        0,
+        mapRowHeaderItemRefIdAndInterpretation.get(rowData),
+      );
+      this.table.setCellMeta(row, 0, "metadata", metadata);
+    }
 
-		this.sortTable(this.scope.field_model.data_model.sorting_type);
+    this.sortTable(this.scope.field_model.data_model.sorting_type);
 
-		// sets date in milliseconds as metadata in first row
-		uniqueDates.map((date, col) => {
-			this.table.setCellMeta(0, col + 1, "metadata", date);
-		});
-	}
+    // sets date in milliseconds as metadata in first row
+    uniqueDates.map((date, col) => {
+      this.table.setCellMeta(0, col + 1, "metadata", date);
+    });
+  }
 
-	sortTable(sortOrder) {
-		const options = {
-			column: 0,
-			sortOrder: sortOrder === "" ? "asc" : sortOrder,
-		};
-		this.table.getPlugin("columnSorting").sort(options);
-	}
+  sortTable(sortOrder) {
+    const options = {
+      column: 0,
+      sortOrder: sortOrder === "" ? "asc" : sortOrder,
+    };
+    this.table.getPlugin("columnSorting").sort(options);
+  }
 
-	createCellClickCallback() {
-		const { scope } = this;
-		const dataPreparation = this.dataPreparation;
+  createCellClickCallback() {
+    const { scope } = this;
+    const dataPreparation = this.dataPreparation;
 
-		return async function findFieldByCell(event, coords) {
-			//check for mouse left button click
-			if (event.which !== 1) {
-				return;
-			}
+    return async function findFieldByCell(event, coords) {
+      //check for mouse left button click
+      if (event.which !== 1) {
+        return;
+      }
 
-			const { row } = coords;
-			const { col } = coords;
+      const { row } = coords;
+      const { col } = coords;
 
-			// avoid interaction with colHeaders and first column (row names)
-			if (row < 0 || col < 1) {
-				return;
-			}
+      // avoid interaction with colHeaders and first column (row names)
+      if (row < 0 || col < 1) {
+        return;
+      }
 
-			const {
-				journal_app_id,
-				view_id,
-				student_name_field_id,
-				event_date_field_id,
-				tag_field_id,
-			} = scope.field_model.data_model;
+      const {
+        journal_app_id,
+        view_id,
+        student_name_field_id,
+        event_date_field_id,
+        tag_field_id,
+      } = scope.field_model.data_model;
 
-			const rowMetadata = this.getCellMeta(row, 0).metadata;
+      const rowMetadata = this.getCellMeta(row, 0).metadata;
 
-			const colHeaderMetadata = this.getCellMeta(0, col).metadata;
-			const isTag = isNaN(colHeaderMetadata);
+      const colHeaderMetadata = this.getCellMeta(0, col).metadata;
+      const isTag = isNaN(colHeaderMetadata);
 
-			// if colHeader metadata is NaN, than its tag, dateInMilliseconds will be date from previous colHeader metadata
-			const dateInMilliseconds = isTag
-				? (() => {
-						let dateMetadata;
-						let minusIndex = 1;
+      // if colHeader metadata is NaN, than its tag, dateInMilliseconds will be date from previous colHeader metadata
+      const dateInMilliseconds = isTag
+        ? (() => {
+            let dateMetadata;
+            let minusIndex = 1;
 
-						while (isNaN(dateMetadata)) {
-							dateMetadata = this.getCellMeta(
-								0,
-								col - minusIndex
-							).metadata;
-							minusIndex++;
-						}
+            while (isNaN(dateMetadata)) {
+              dateMetadata = this.getCellMeta(0, col - minusIndex).metadata;
+              minusIndex++;
+            }
 
-						return dateMetadata;
-				  })()
-				: colHeaderMetadata;
+            return dateMetadata;
+          })()
+        : colHeaderMetadata;
 
-			const items = await gudhub.getItems(journal_app_id, false);
+      const items = await gudhub.getItems(journal_app_id, false);
 
-			const eventDateFieldInfo = await gudhub.getField(
-				journal_app_id,
-				event_date_field_id
-			);
-			const tagFieldInfo = await gudhub.getField(
-				journal_app_id,
-				tag_field_id
-			);
+      const eventDateFieldInfo = await gudhub.getField(
+        journal_app_id,
+        event_date_field_id,
+      );
+      const tagFieldInfo = await gudhub.getField(journal_app_id, tag_field_id);
 
-			const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
-			const dateRange = `${dateInMilliseconds}:${
-				dateInMilliseconds + oneDayInMilliseconds
-			}`;
+      const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+      const dateRange = `${dateInMilliseconds}:${
+        dateInMilliseconds + oneDayInMilliseconds
+      }`;
 
-			const filterList = [
-				{
-					data_type: eventDateFieldInfo.data_type,
-					field_id: event_date_field_id,
-					search_type: "range",
-					selected_search_option_variable: "Value",
-					valuesArray: [dateRange],
-				},
-			];
+      const filterList = [
+        {
+          data_type: eventDateFieldInfo.data_type,
+          field_id: event_date_field_id,
+          search_type: "range",
+          selected_search_option_variable: "Value",
+          valuesArray: [dateRange],
+        },
+      ];
 
-			if (dataPreparation instanceof SubjectDataPreparation) {
-				const nameFieldInfo = await gudhub.getField(
-					journal_app_id,
-					student_name_field_id
-				);
+      if (dataPreparation instanceof SubjectDataPreparation) {
+        const nameFieldInfo = await gudhub.getField(
+          journal_app_id,
+          student_name_field_id,
+        );
 
-				if (!nameFieldInfo) {
-					return;
-				}
-				const nameFilter = {
-					data_type: nameFieldInfo.data_type,
-					field_id: student_name_field_id,
-					search_type: "equal_and",
-					selected_search_option_variable: "Value",
-					valuesArray: [rowMetadata],
-				};
-				filterList.push(nameFilter);
-			} else if (dataPreparation instanceof StudentDataPreparation) {
-				const { subject_field_id } = scope.field_model.data_model;
-				const subjectFieldInfo = await gudhub.getField(
-					journal_app_id,
-					subject_field_id
-				);
+        if (!nameFieldInfo) {
+          return;
+        }
+        const nameFilter = {
+          data_type: nameFieldInfo.data_type,
+          field_id: student_name_field_id,
+          search_type: "equal_and",
+          selected_search_option_variable: "Value",
+          valuesArray: [rowMetadata],
+        };
+        filterList.push(nameFilter);
+      } else if (dataPreparation instanceof StudentDataPreparation) {
+        const { subject_field_id } = scope.field_model.data_model;
+        const subjectFieldInfo = await gudhub.getField(
+          journal_app_id,
+          subject_field_id,
+        );
 
-				if (!subjectFieldInfo) {
-					return;
-				}
-				const subjectFilter = {
-					data_type: 'item_ref',
-					field_id: subject_field_id,
-					search_type: "equal_or",
-					selected_search_option_variable: "Value",
-					valuesArray: [rowMetadata],
-				};
+        if (!subjectFieldInfo) {
+          return;
+        }
+        const subjectFilter = {
+          data_type: "item_ref",
+          field_id: subject_field_id,
+          search_type: "equal_or",
+          selected_search_option_variable: "Value",
+          valuesArray: [rowMetadata],
+        };
 
-				filterList.push(subjectFilter);
-			}
+        filterList.push(subjectFilter);
+      }
 
-			if (isTag) {
-				//its tag, and we need to add filter for it
-				const tagFilter = {
-					data_type: tagFieldInfo.data_type,
-					field_id: tag_field_id,
-					search_type: "equal_and",
-					selected_search_option_variable: "Value",
-					valuesArray: [colHeaderMetadata],
-				};
+      if (isTag) {
+        //its tag, and we need to add filter for it
+        const tagFilter = {
+          data_type: tagFieldInfo.data_type,
+          field_id: tag_field_id,
+          search_type: "equal_and",
+          selected_search_option_variable: "Value",
+          valuesArray: [colHeaderMetadata],
+        };
 
-				filterList.push(tagFilter);
-			} else {
-				const noTagFilter = {
-					data_type: tagFieldInfo.data_type,
-					field_id: tag_field_id,
-					search_type: "value",
-					selected_search_option_variable: "Value",
-					valuesArray: ["false"],
-				};
+        filterList.push(tagFilter);
+      } else {
+        const noTagFilter = {
+          data_type: tagFieldInfo.data_type,
+          field_id: tag_field_id,
+          search_type: "value",
+          selected_search_option_variable: "Value",
+          valuesArray: ["false"],
+        };
 
-				filterList.push(noTagFilter);
-			}
+        filterList.push(noTagFilter);
+      }
 
-			const { points_filters_list } = scope.field_model.data_model;
-			const filteredItemsBySettingsFilter = await FilterItems.ByFilterSettings(items, scope, points_filters_list);
-			// gudhub filter used instead of searching item in items
-			const filteredItems = await gudhub.filter(filteredItemsBySettingsFilter, filterList);
+      const { points_filters_list } = scope.field_model.data_model;
+      const filteredItemsBySettingsFilter = await FilterItems.ByFilterSettings(
+        items,
+        scope,
+        points_filters_list,
+      );
+      // gudhub filter used instead of searching item in items
+      const filteredItems = await gudhub.filter(
+        filteredItemsBySettingsFilter,
+        filterList,
+      );
 
-			// viewId of item edit form
-			const viewId = view_id;
+      // viewId of item edit form
+      const viewId = view_id;
 
-			// fields in item are objects in array, but gudhub create/update item needs fields in object ({ fieldId : value })
-			if (filteredItems.length === 0) {
-				const fields = {
-					[student_name_field_id]: rowMetadata,
-					[event_date_field_id]: dateInMilliseconds,
-				};
+      // fields in item are objects in array, but gudhub create/update item needs fields in object ({ fieldId : value })
+      if (filteredItems.length === 0) {
+        const fields = {
+          [student_name_field_id]: rowMetadata,
+          [event_date_field_id]: dateInMilliseconds,
+        };
 
-				if (isTag) {
-					fields[tag_field_id] = colHeaderMetadata;
-				}
+        if (isTag) {
+          fields[tag_field_id] = colHeaderMetadata;
+        }
 
-				const fieldModel = {
-					appId: journal_app_id,
-					viewId,
-					fields,
-				};
+        const fieldModel = {
+          appId: journal_app_id,
+          viewId,
+          fields,
+        };
 
-				showGhDialog(fieldModel);
-			} else {
-				const { item_id, fields } = filteredItems[0];
+        showGhDialog(fieldModel);
+      } else {
+        const { item_id, fields } = filteredItems[0];
 
-				const fieldsObject = {};
-				fields.forEach(({ element_id, field_value }) => {
-					fieldsObject[element_id] = field_value;
-				});
+        const fieldsObject = {};
+        fields.forEach(({ element_id, field_value }) => {
+          fieldsObject[element_id] = field_value;
+        });
 
-				const fieldModel = {
-					appId: journal_app_id,
-					itemId: item_id,
-					viewId,
-					fields: fieldsObject,
-				};
+        const fieldModel = {
+          appId: journal_app_id,
+          itemId: item_id,
+          viewId,
+          fields: fieldsObject,
+        };
 
-				showGhDialog(fieldModel);
-			}
-		};
-	}
+        showGhDialog(fieldModel);
+      }
+    };
+  }
 }
 
 function onApplyFunction(item) {
-	const { appId } = this.fieldModel;
-	const fields = [];
+  const { appId } = this.fieldModel;
+  const fields = [];
 
-	for (const [element_id, value] of Object.entries(item.fields)) {
-		fields.push({ field_id: element_id, field_value: value });
-	}
+  for (const [element_id, value] of Object.entries(item.fields)) {
+    fields.push({ field_id: element_id, field_value: value });
+  }
 
-	const itemData = {
-		fields,
-	};
+  const itemData = {
+    fields,
+  };
 
-	// if item doesnt have [itemId], then we need to create
-	if (item.itemId) {
-		itemData.item_id = item.itemId;
-		gudhub.updateItems(appId, [itemData]);
-	} else {
-		gudhub.addNewItems(appId, [itemData]);
-	}
+  // if item doesnt have [itemId], then we need to create
+  if (item.itemId) {
+    itemData.item_id = item.itemId;
+    gudhub.updateItems(appId, [itemData]);
+  } else {
+    gudhub.addNewItems(appId, [itemData]);
+  }
 
-	this.cancel();
+  this.cancel();
 }
 
 function showGhDialog(fieldModel) {
-	const GhDialog = gudhub.ghconstructor.angularInjector.get("GhDialog");
+  const GhDialog = gudhub.ghconstructor.angularInjector.get("GhDialog");
 
-	GhDialog.show({
-		position: "center",
-		toolbar: false,
-		template: {
-			toolbar: "",
-			content: `
+  GhDialog.show({
+    position: "center",
+    toolbar: false,
+    template: {
+      toolbar: "",
+      content: `
             <div class="update_container">
                 <div class="cancel-container">
                     <span gh-icon="cross 0893d2 25px normal" ng-click="cancel()"></span>
@@ -406,34 +400,34 @@ function showGhDialog(fieldModel) {
                     <button ng-click="cancel()" type="button" class="btn btn-blue-reverse">Cancel</button>
                 </div>
             </div>`,
-		},
-		locals: {
-			fieldModel,
-		},
-		controller: [
-			"$scope",
-			"fieldModel",
-			function ($scope, fieldModel) {
-				$scope.fieldModel = angular.copy(fieldModel);
+    },
+    locals: {
+      fieldModel,
+    },
+    controller: [
+      "$scope",
+      "fieldModel",
+      function ($scope, fieldModel) {
+        $scope.fieldModel = angular.copy(fieldModel);
 
-				$scope.onApplyFunction = onApplyFunction.bind($scope);
-			},
-		],
-	});
+        $scope.onApplyFunction = onApplyFunction.bind($scope);
+      },
+    ],
+  });
 }
 
 function convertMsToDDMM(milliseconds) {
-	const date_separator = "/";
+  const date_separator = "/";
 
-	const date = new Date(milliseconds);
-	const day = date.getDate();
-	const month = date.getMonth() + 1;
+  const date = new Date(milliseconds);
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
 
-	return [day, month].join(date_separator);
+  return [day, month].join(date_separator);
 }
 
 // Register web component only if it is not registered yet
 
 if (!customElements.get("gh-study-journal")) {
-	customElements.define("gh-study-journal", GhStudyJournal);
+  customElements.define("gh-study-journal", GhStudyJournal);
 }
