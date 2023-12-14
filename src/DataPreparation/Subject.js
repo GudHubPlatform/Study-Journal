@@ -78,7 +78,7 @@ export default class SubjectDataPreparation {
 
       if (!student_name_field) continue;
 
-      const raw_student_name = student_name_field.field_value;
+      const studentNameRefId = student_name_field.field_value;
       const point = await gudhub.getInterpretationById(
         journal_app_id,
         item_id,
@@ -101,15 +101,12 @@ export default class SubjectDataPreparation {
       // set hours, minutes, seconds to 0
       const date_without_time = new Date(event_date).setHours(0, 0, 0, 0);
 
-      const student_values = [];
-
-      for (const value of [raw_student_name, point, date_without_time, tag]) {
-        if (value !== null) {
-          student_values.push(value);
-        } else {
-          student_values.push("");
-        }
-      }
+      const student_values = {
+        studentNameRefId,
+        point,
+        event_date: date_without_time,
+        tag,
+      };
 
       students_data.push(student_values);
     }
@@ -118,16 +115,16 @@ export default class SubjectDataPreparation {
   }
 
   prepareTableData(students_data, studentNameMapWithInterpretations) {
-    students_data.sort((a, b) => new Date(a[2]) - new Date(b[2]));
+    students_data.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
     const uniqueDatesSet = new Set();
 
     students_data.forEach((item) => {
-      if (item[2]) {
-        uniqueDatesSet.add(item[2]);
+      if (item.event_date) {
+        uniqueDatesSet.add(item.event_date);
       }
-      if (item[3]) {
-        uniqueDatesSet.add(item[3]);
+      if (item.tag) {
+        uniqueDatesSet.add(item.tag);
       }
     });
 
@@ -136,9 +133,9 @@ export default class SubjectDataPreparation {
     const twoDimensionalArray = [];
 
     // Iterate through each unique student name.
-    studentNameMapWithInterpretations.forEach((studentName, rawStudentName) => {
+    studentNameMapWithInterpretations.forEach((studentName, studentNameRefId) => {
       // Create a row with the student's name.
-      const row = [rawStudentName];
+      const row = [studentNameRefId];
 
       // Iterate through each unique date.
       uniqueDates.forEach((date) => {
@@ -146,17 +143,17 @@ export default class SubjectDataPreparation {
 
         if (isNaN(date)) {
           student = students_data.find(
-            (item) => item[0] === rawStudentName && item[3] === date,
+            (item) => item.studentNameRefId === studentNameRefId && item.tag === date,
           );
         } else {
           // Find the student for the student and date combination.
           student = students_data.find(
             (item) =>
-              item[0] === rawStudentName && item[2] === date && !item[3],
+              item.studentNameRefId === studentNameRefId && item.event_date === date && !item.tag,
           );
         }
         // Add the student to the row or an empty string if no student is found.
-        row.push(student ? student[1] : "");
+        row.push(student ? student.point : "");
       });
       twoDimensionalArray.push(row);
     });
