@@ -2,6 +2,8 @@ import GhHtmlElement from "@gudhub/gh-html-element";
 import html from "./studyjournal.html";
 import "./style.scss";
 
+import { journalModes } from './data.js';
+
 import Handsontable from "handsontable";
 import "handsontable/dist/handsontable.full.min.css";
 
@@ -9,6 +11,8 @@ import DataPreparation from "./DataPreparation/index.js";
 import DatePagination from "./DatePagination.js";
 
 import createCellClickCallback from './click.js';
+import StudentDataPreparation from "./DataPreparation/Student.js";
+import SubjectDataPreparation from "./DataPreparation/Subject.js";
 class GhStudyJournal extends GhHtmlElement {
   // Constructor with super() is required for native web component initialization
 
@@ -28,7 +32,8 @@ class GhStudyJournal extends GhHtmlElement {
     const { journal_mode, journal_app_id, isPaginationEnabled } =
       this.scope.field_model.data_model;
 
-    this.dataPreparation = new DataPreparation[journal_mode](this.scope);
+    this.dataPreparation = chooseDataPreparationClass(journal_mode, this.scope);
+    console.log(this.dataPreparation);
 
     this.renderPagination(isPaginationEnabled);
 
@@ -168,6 +173,27 @@ class GhStudyJournal extends GhHtmlElement {
     };
     this.table.getPlugin("columnSorting").sort(options);
   }
+}
+
+function chooseDataPreparationClass(journalMode, scope) {
+  let dataPreparation;
+
+  switch (journalMode) {
+    case journalModes.subject.byDate:
+      dataPreparation = new SubjectDataPreparation(scope, true);
+      break;
+    case journalModes.subject.byLessons:
+      dataPreparation = new SubjectDataPreparation(scope);
+      break;
+    case journalModes.student:
+      dataPreparation = new StudentDataPreparation(scope);
+      break;
+    default:
+      console.error('Unknown journal mode');
+      break;
+  }
+
+  return dataPreparation;
 }
 
 function convertMsToDDMM(milliseconds) {

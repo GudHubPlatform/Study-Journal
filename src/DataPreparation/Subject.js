@@ -1,9 +1,10 @@
 import { FilterItems } from "../utils/FilterItems.js";
 export default class SubjectDataPreparation {
-  constructor(scope) {
+  constructor(scope, byDate = false) {
     this.scope = scope;
     this.interpretatedData;
     this.items;
+    this.byDate = byDate;
   }
 
   async getTableData(dateRange) {
@@ -128,7 +129,7 @@ export default class SubjectDataPreparation {
       }
     });
 
-    const uniqueDates = [...uniqueDatesSet];
+    const uniqueDates = this.byDate ? insertMissingDates([...uniqueDatesSet]) : [...uniqueDatesSet];
 
     const twoDimensionalArray = [];
 
@@ -190,4 +191,36 @@ export default class SubjectDataPreparation {
 
     return studentsNamesMap;
   }
+}
+
+function insertMissingDates(dateArray) {
+  const resultArray = [];
+  const isDateString = (date) => typeof date === 'string';
+
+  for (let i = 0; i < dateArray.length; i++) {
+    if (isDateString(dateArray[i])) {
+      // Пропускаємо стрічки, додаючи їх без змін
+      resultArray.push(dateArray[i]);
+    } else {
+      resultArray.push(dateArray[i]);
+
+      // Перевіряємо чи є пропущені дати і додаємо їх, якщо потрібно
+      if (i < dateArray.length - 1) {
+        const currentTimestamp = dateArray[i];
+        const nextTimestamp = dateArray[i + 1];
+        const diff = nextTimestamp - currentTimestamp;
+
+        if (diff > 86400000) { // 86400000 мілісекунд у добі
+          const numberOfDays = Math.floor(diff / 86400000);
+
+          for (let j = 1; j < numberOfDays; j++) {
+            const missingDate = currentTimestamp + j * 86400000;
+            resultArray.push(missingDate);
+          }
+        }
+      }
+    }
+  }
+
+  return resultArray;
 }

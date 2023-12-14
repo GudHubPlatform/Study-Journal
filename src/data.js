@@ -1,5 +1,13 @@
 import "./studyjournal.webcomponent.js";
 
+export const journalModes = {
+  subject: {
+    byDate: 'subjectByDate',
+    byLessons: 'subjectByLessons',
+  },
+  student: 'student'
+};
+
 export default class GhStudyJournalData {
   /*------------------------------- FIELD TEMPLATE --------------------------------------*/
 
@@ -14,7 +22,7 @@ export default class GhStudyJournalData {
         field_value: "",
         data_type: "study_journal",
         data_model: {
-          journal_mode: "subject",
+          journal_mode: journalModes.subject.byDate,
           students_app_id: null,
           students_app_name_field_id: null,
           students_filters_list: [],
@@ -84,12 +92,16 @@ export default class GhStudyJournalData {
                   data_model: {
                     options: [
                       {
-                        name: "Subject",
-                        value: "subject",
+                        name: "Subject by lessons",
+                        value: journalModes.subject.byLessons,
+                      },
+                      {
+                        name: "Subject by dates",
+                        value: journalModes.subject.byDate,
                       },
                       {
                         name: "Student",
-                        value: "student",
+                        value: journalModes.student,
                       },
                     ],
                   },
