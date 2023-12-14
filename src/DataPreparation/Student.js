@@ -156,7 +156,7 @@ export default class StudentDataPreparation {
   }
 
   prepareTableData(students_data, subjectTitleMapRefIdAndInterpretation) {
-    students_data.sort((a, b) => new Date(a[2]) - new Date(b[2]));
+    students_data.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
     const uniqueDatesSet = new Set();
 
