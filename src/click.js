@@ -49,8 +49,6 @@ export default function createCellClickCallback() {
       scope.field_model.data_model.points_filters_list
     );
 
-    console.log(filterList);
-
     const filteredItems = await gudhub.filter(
       filteredItemsBySettingsFilter,
       filterList

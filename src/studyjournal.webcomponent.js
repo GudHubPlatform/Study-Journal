@@ -33,7 +33,6 @@ class GhStudyJournal extends GhHtmlElement {
       this.scope.field_model.data_model;
 
     this.dataPreparation = chooseDataPreparationClass(journal_mode, this.scope);
-    console.log(this.dataPreparation);
 
     this.renderPagination(isPaginationEnabled);
 
