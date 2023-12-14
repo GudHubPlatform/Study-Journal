@@ -46,17 +46,9 @@ export default class StudentDataPreparation {
       points_filters_list,
     );
 
-    const currentStudentRefId = [appId, itemId].join(".");
-    const filterByStudent = [
-      {
-        data_type: "item_ref",
-        field_id: student_name_field_id,
-        search_type: "equal_or",
-        selected_search_option_variable: "Value",
-        valuesArray: [currentStudentRefId],
-      },
-    ];
-    items = await gudhub.filter(items, filterByStudent);
+    const appCurrentStudentFilter = await FilterItems.getFilterListAppCurrentStudentRefId(this.scope);
+
+    items = await gudhub.filter(items, appCurrentStudentFilter);
     this.items = items;
   }
 

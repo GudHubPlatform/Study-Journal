@@ -15,6 +15,23 @@ export class FilterItems {
     return filtered_items;
   }
 
+  static async getFilterListAppCurrentStudentRefId(scope) {
+    const { appId, itemId } = scope;
+    const { student_name_field_id } = scope.field_model.data_model;
+    const currentStudentRefId = [appId, itemId].join(".");
+    const filterByStudent = [
+      {
+        data_type: "item_ref",
+        field_id: student_name_field_id,
+        search_type: "equal_or",
+        selected_search_option_variable: "Value",
+        valuesArray: [currentStudentRefId],
+      },
+    ];
+
+    return filterByStudent;
+  }
+
   static async ByPagination(items, scope, dateRange) {
     if (!dateRange) return items;
 
