@@ -19,7 +19,7 @@ export class FilterItems {
     const { appId, itemId } = scope;
     const { student_name_field_id } = scope.field_model.data_model;
     const currentStudentRefId = [appId, itemId].join(".");
-    const filterByStudent = [
+    const byStudentFilter = [
       {
         data_type: "item_ref",
         field_id: student_name_field_id,
@@ -29,7 +29,7 @@ export class FilterItems {
       },
     ];
 
-    return filterByStudent;
+    return byStudentFilter;
   }
 
   static async ByPagination(items, scope, dateRange) {
