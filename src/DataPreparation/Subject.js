@@ -27,6 +27,7 @@ export default class SubjectDataPreparation {
     const [uniqueDates, students_data] = await this.prepareTableData(
       interpretated_filtered_items,
       studentNameMapWithInterpretations,
+      dateRange
     );
 
     return [uniqueDates, students_data, studentNameMapWithInterpretations];
@@ -116,7 +117,7 @@ export default class SubjectDataPreparation {
     return students_data;
   }
 
-  async prepareTableData(students_data, studentNameMapWithInterpretations) {
+  async prepareTableData(students_data, studentNameMapWithInterpretations, dateRange) {
     students_data.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
     const uniqueDatesSet = new Set();
@@ -132,9 +133,8 @@ export default class SubjectDataPreparation {
 
     const uniqueDates = this.byDate ? insertMissingDates([...uniqueDatesSet])
                                     : mergeSortedDateArrays([...uniqueDatesSet],
-                                        await getLessonsDatesFilteredByCurrentAppSubjectAndClass(this.scope, [...uniqueDatesSet])
+                                        await getLessonsDatesFilteredByCurrentAppSubjectAndClass(this.scope, dateRange)
                                       );
-
     const twoDimensionalArray = [];
 
     // Iterate through each unique student name.
@@ -229,12 +229,13 @@ function insertMissingDates(dateArray) {
   return resultArray;
 }
 
-async function getLessonsDatesFilteredByCurrentAppSubjectAndClass(scope) {
+async function getLessonsDatesFilteredByCurrentAppSubjectAndClass(scope, dateRange) {
   const { appId, itemId, fieldId } = scope;
   const { lessons_filters_list, lessons_date_field_id } = scope.field_model.data_model;
   const modifiedFilterList = await gudhub.prefilter(lessons_filters_list, {element_app_id: fieldId, item_id: itemId, app_id: appId});
   const lessonItems = await gudhub.getItems(appId);
-  const filteredItems = await gudhub.filter(lessonItems, modifiedFilterList);
+  const filteredByPagination = await FilterItems.ByPagination(lessonItems, scope, dateRange);
+  const filteredItems = await gudhub.filter(filteredByPagination, modifiedFilterList);
 
   const lessonsDates = new Set();
 
@@ -258,23 +259,61 @@ async function getLessonsDatesFilteredByCurrentAppSubjectAndClass(scope) {
 }
 
 function mergeSortedDateArrays(dataArray, additionalArray) {
+  if (dataArray.length === 0) return additionalArray.slice();
+  if (additionalArray.length === 0) return dataArray.slice();
+
   const resultArray = [];
   let dataIndex = 0;
   let additionalIndex = 0;
 
-  while (dataIndex < dataArray.length || additionalIndex < additionalArray.length) {
-    const currentData = dataArray[dataIndex];
-    const currentAdditional = additionalArray[additionalIndex];
+  while (dataIndex < dataArray.length && additionalIndex < additionalArray.length) {
+    const dataElement = dataArray[dataIndex];
+    const additionalElement = additionalArray[additionalIndex];
 
-    if (currentAdditional < currentData) {
-      resultArray.push(currentAdditional);
-      additionalIndex++;
-    } else if (currentAdditional === currentData) {
-      additionalIndex++;
-    } else{
-      resultArray.push(currentData);
+    if (typeof dataElement === 'string' && typeof additionalElement === 'string') {
+      // Both elements are strings
+      resultArray.push(dataElement);
       dataIndex++;
+    } else if (typeof dataElement === 'string') {
+      // Only dataElement is a string
+      resultArray.push(dataElement);
+      dataIndex++;
+    } else if (typeof additionalElement === 'string') {
+      // Only additionalElement is a string
+      resultArray.push(additionalElement);
+      additionalIndex++;
+    } else {
+      // Both elements are numbers (dates)
+      if (dataElement === additionalElement) {
+        resultArray.push(dataElement);
+        dataIndex++;
+        additionalIndex++;
+      } else if (dataElement < additionalElement) {
+        resultArray.push(dataElement);
+        dataIndex++;
+      } else {
+        resultArray.push(additionalElement);
+        additionalIndex++;
+      }
     }
+  }
+
+  // Add remaining elements from dataArray
+  while (dataIndex < dataArray.length) {
+    const dataElement = dataArray[dataIndex];
+    if (!resultArray.includes(dataElement)) {
+      resultArray.push(dataElement);
+    }
+    dataIndex++;
+  }
+
+  // Add remaining elements from additionalArray
+  while (additionalIndex < additionalArray.length) {
+    const additionalElement = additionalArray[additionalIndex];
+    if (!resultArray.includes(additionalElement)) {
+      resultArray.push(additionalElement);
+    }
+    additionalIndex++;
   }
 
   return resultArray;
