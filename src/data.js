@@ -93,6 +93,30 @@ export default class GhStudyJournalData {
           [
             {
               type: "ghElement",
+              property: "data_model.view_id",
+              onInit: function (settingScope, fieldModel) {
+                settingScope.$watch(
+                  function () {
+                    return fieldModel.data_model.journal_app_id;
+                  },
+                  function (newValue) {
+                    settingScope.field_model.data_model.app_id = newValue;
+                  },
+                );
+              },
+              data_model: function (fieldModel) {
+                return {
+                  data_model: {
+                    app_id: fieldModel.data_model.journal_app_id,
+                  },
+                  field_name: "View name",
+                  name_space: "view_name",
+                  data_type: "view_list",
+                };
+              },
+            },
+            {
+              type: "ghElement",
               property: "data_model.journal_mode",
               data_model() {
                 return {
@@ -520,36 +544,6 @@ export default class GhStudyJournalData {
                       },
                     ],
                   },
-                };
-              },
-            },
-          ],
-          [
-            {
-              title: "Items Settings",
-              type: "header",
-            },
-            {
-              type: "ghElement",
-              property: "data_model.view_id",
-              onInit: function (settingScope, fieldModel) {
-                settingScope.$watch(
-                  function () {
-                    return fieldModel.data_model.journal_app_id;
-                  },
-                  function (newValue) {
-                    settingScope.field_model.data_model.app_id = newValue;
-                  },
-                );
-              },
-              data_model: function (fieldModel) {
-                return {
-                  data_model: {
-                    app_id: fieldModel.data_model.journal_app_id,
-                  },
-                  field_name: "View name",
-                  name_space: "view_name",
-                  data_type: "view_list",
                 };
               },
             },
