@@ -18,8 +18,6 @@ export function filterDatesWeekends(dates, scope) {
 			break;
 	}
 
-	console.log(showDaysIndexes);
-
 	const filteredDates = filterDates(dates, showDaysIndexes);
 
 	return filteredDates;
