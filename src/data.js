@@ -23,6 +23,9 @@ export default class GhStudyJournalData {
         data_type: "study_journal",
         data_model: {
           journal_mode: journalModes.subject.byDate,
+          lessons_app_id: null,
+          lessons_date_field_id: null,
+          lessons_filters_list: null,
           students_app_id: null,
           students_app_name_field_id: null,
           students_filters_list: [],
@@ -107,6 +110,87 @@ export default class GhStudyJournalData {
                   },
                 };
               },
+            },
+          ],
+          [
+            {
+              title: "Lessons Settings",
+              type: "header",
+            },
+            {
+              type: "ghElement",
+              property: "data_model.lessons_app_id",
+              data_model: function () {
+                return {
+                  data_type: "app",
+                  field_name: "Lessons App",
+                  name_space: "lessons_app",
+                  data_model: {
+                    current_app: false,
+                    interpretation: [
+                      {
+                        src: "form",
+                        id: "with_text",
+                        settings: {
+                          editable: 1,
+                          show_field_name: 1,
+                          show_field: 1,
+                        },
+                      },
+                    ],
+                  },
+                };
+              },
+            },
+            {
+              type: "ghElement",
+              property: "data_model.lessons_date_field_id",
+              data_model: function (fieldModel) {
+                return {
+                  data_type: "field",
+                  field_name: "Student Full Name",
+                  name_space: "student_full_name",
+                  data_model: {
+                    app_id: fieldModel.data_model.lessons_app_id,
+                  },
+                };
+              },
+              onInit: function (settingScope, fieldModel) {
+                settingScope.$watch(
+                  function () {
+                    return fieldModel.data_model.lessons_app_id;
+                  },
+                  function (newValue) {
+                    settingScope.field_model.data_model.app_id = newValue;
+                  },
+                );
+              },
+            },
+            {
+              title: "Lessons Filter",
+              type: "header",
+            },
+            {
+              type: "html",
+              onInit: function (settingScope) {
+                settingScope.$watch(
+                  function () {
+                    return settingScope.fieldModel.data_model.lessons_app_id;
+                  },
+                  function (newValue) {
+                    settingScope.field_model.data_model.app_id = newValue;
+                  },
+                );
+              },
+              data_model: function (fieldModel) {
+                return {
+                  recipient: {
+                    app_id: fieldModel.data_model.lessons_app_id,
+                  },
+                };
+              },
+              control:
+                '<gh-filter gh-filter-data-model="field_model" filter-list="fieldModel.data_model.lessons_filters_list" gh-mode="variable"></gh-filter>',
             },
           ],
           [

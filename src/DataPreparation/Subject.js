@@ -15,6 +15,7 @@ export default class SubjectDataPreparation {
       this.scope,
       dateRange,
     );
+
     const interpretated_filtered_items =
       await this.getInterpretatedData(filtered_items);
 
@@ -23,7 +24,7 @@ export default class SubjectDataPreparation {
       await this.getStudentNamesMapFromStudentsApp();
 
     //if interpretatedData = undefined, then take fake data (like demo view)
-    const [uniqueDates, students_data] = this.prepareTableData(
+    const [uniqueDates, students_data] = await this.prepareTableData(
       interpretated_filtered_items,
       studentNameMapWithInterpretations,
     );
@@ -115,7 +116,7 @@ export default class SubjectDataPreparation {
     return students_data;
   }
 
-  prepareTableData(students_data, studentNameMapWithInterpretations) {
+  async prepareTableData(students_data, studentNameMapWithInterpretations) {
     students_data.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
     const uniqueDatesSet = new Set();
@@ -129,7 +130,10 @@ export default class SubjectDataPreparation {
       }
     });
 
-    const uniqueDates = this.byDate ? insertMissingDates([...uniqueDatesSet]) : [...uniqueDatesSet];
+    const uniqueDates = this.byDate ? insertMissingDates([...uniqueDatesSet])
+                                    : mergeSortedDateArrays([...uniqueDatesSet],
+                                        await getLessonsDatesFilteredByCurrentAppSubjectAndClass(this.scope, [...uniqueDatesSet])
+                                      );
 
     const twoDimensionalArray = [];
 
@@ -219,6 +223,57 @@ function insertMissingDates(dateArray) {
           }
         }
       }
+    }
+  }
+
+  return resultArray;
+}
+
+async function getLessonsDatesFilteredByCurrentAppSubjectAndClass(scope) {
+  const { appId, itemId, fieldId } = scope;
+  const { lessons_filters_list, lessons_date_field_id } = scope.field_model.data_model;
+  const modifiedFilterList = await gudhub.prefilter(lessons_filters_list, {element_app_id: fieldId, item_id: itemId, app_id: appId});
+  const lessonItems = await gudhub.getItems(appId);
+  const filteredItems = await gudhub.filter(lessonItems, modifiedFilterList);
+
+  const lessonsDates = new Set();
+
+  filteredItems.forEach(item => {
+    const { fields } = item;
+    const foundField = fields.find(field => field.field_id == lessons_date_field_id);
+
+    if (!foundField) return;
+
+    const { field_value } = foundField;
+
+    if (isNaN(+field_value)) return;
+
+    const date = new Date(+field_value);
+    const dateWithout_time = date.setHours(0, 0, 0, 0);
+
+    lessonsDates.add(dateWithout_time);
+  });
+
+  return [...lessonsDates].sort((a, b) => new Date(a) - new Date(b));;
+}
+
+function mergeSortedDateArrays(dataArray, additionalArray) {
+  const resultArray = [];
+  let dataIndex = 0;
+  let additionalIndex = 0;
+
+  while (dataIndex < dataArray.length || additionalIndex < additionalArray.length) {
+    const currentData = dataArray[dataIndex];
+    const currentAdditional = additionalArray[additionalIndex];
+
+    if (currentAdditional < currentData) {
+      resultArray.push(currentAdditional);
+      additionalIndex++;
+    } else if (currentAdditional === currentData) {
+      additionalIndex++;
+    } else{
+      resultArray.push(currentData);
+      dataIndex++;
     }
   }
 
