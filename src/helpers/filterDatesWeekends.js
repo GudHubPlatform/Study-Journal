@@ -26,7 +26,7 @@ export function filterDatesWeekends(dates, scope) {
 }
 
 function filterDates(dates, weekdaysIndexesToShow = []) {
-	let result = [];
+	const result = [];
 
 	let prevNonStringDate = null; // Зберігаємо попередню нелітеровану дату
 
