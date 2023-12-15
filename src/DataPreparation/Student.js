@@ -1,4 +1,5 @@
 import { FilterItems } from "../utils/FilterItems.js";
+import { filterDatesWeekends } from '../helpers/filterDatesWeekends.js';
 
 export default class StudentDataPreparation {
   constructor(scope) {
@@ -161,7 +162,8 @@ export default class StudentDataPreparation {
       }
     });
 
-    const uniqueDates = [...uniqueDatesSet];
+    let uniqueDates = [...uniqueDatesSet];
+    uniqueDates = filterDatesWeekends(uniqueDates, this.scope);
 
     const twoDimensionalArray = [];
 

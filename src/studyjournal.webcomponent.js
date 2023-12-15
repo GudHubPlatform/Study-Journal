@@ -7,7 +7,6 @@ import { journalModes } from './data.js';
 import Handsontable from "handsontable";
 import "handsontable/dist/handsontable.full.min.css";
 
-import DataPreparation from "./DataPreparation/index.js";
 import DatePagination from "./DatePagination.js";
 
 import createCellClickCallback from './click.js';

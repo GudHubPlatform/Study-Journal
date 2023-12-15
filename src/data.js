@@ -8,6 +8,12 @@ export const journalModes = {
   student: 'student'
 };
 
+export const showWeekendModes = {
+  saturday: 'saturday',
+  sunday: 'sunday',
+  showBoth: 'both',
+};
+
 export default class GhStudyJournalData {
   /*------------------------------- FIELD TEMPLATE --------------------------------------*/
 
@@ -23,6 +29,7 @@ export default class GhStudyJournalData {
         data_type: "study_journal",
         data_model: {
           journal_mode: journalModes.subject.byDate,
+          showWeekends: null,
           lessons_app_id: null,
           lessons_date_field_id: null,
           lessons_filters_list: null,
@@ -106,6 +113,33 @@ export default class GhStudyJournalData {
                         name: "Student",
                         value: journalModes.student,
                       },
+                    ],
+                  },
+                };
+              },
+            },
+            {
+              type: "ghElement",
+              property: "data_model.showWeekends",
+              data_model() {
+                return {
+                  field_name: "Show weekends",
+                  name_space: "show_weekends",
+                  data_type: "text_opt",
+                  data_model: {
+                    options: [
+                      {
+                        name: "Show Saturday",
+                        value: showWeekendModes.saturday,
+                      },
+                      {
+                        name: "Show Sunday",
+                        value: showWeekendModes.sunday,
+                      },
+                      {
+                        name: "Show both",
+                        value: showWeekendModes.showBoth,
+                      }
                     ],
                   },
                 };

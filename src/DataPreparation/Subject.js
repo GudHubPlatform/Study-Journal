@@ -1,4 +1,5 @@
 import { FilterItems } from "../utils/FilterItems.js";
+import { filterDatesWeekends } from '../helpers/filterDatesWeekends.js';
 export default class SubjectDataPreparation {
   constructor(scope, byDate = false) {
     this.scope = scope;
@@ -131,10 +132,12 @@ export default class SubjectDataPreparation {
       }
     });
 
-    const uniqueDates = this.byDate ? insertMissingDates([...uniqueDatesSet])
+    let uniqueDates = this.byDate ? insertMissingDates([...uniqueDatesSet])
                                     : mergeSortedDateArrays([...uniqueDatesSet],
                                         await getLessonsDatesFilteredByCurrentAppSubjectAndClass(this.scope, dateRange)
                                       );
+    uniqueDates = filterDatesWeekends(uniqueDates, this.scope);
+    
     const twoDimensionalArray = [];
 
     // Iterate through each unique student name.
