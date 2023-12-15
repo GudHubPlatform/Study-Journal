@@ -8,10 +8,10 @@ export const journalModes = {
 	student: 'student'
 };
 
-export const showWeekendModes = {
-	saturday: 'saturday',
-	sunday: 'sunday',
-	showBoth: 'both'
+export const showWorkdaysOptions = {
+	monFri: '5',
+	monSat: '6',
+	monSun: '7'
 };
 
 export default class GhStudyJournalData {
@@ -29,7 +29,7 @@ export default class GhStudyJournalData {
 				data_type: 'study_journal',
 				data_model: {
 					journal_mode: journalModes.subject.byDate,
-					showWeekends: null,
+					showWorkdays: showWorkdaysOptions.monFri,
 					lessons_app_id: null,
 					lessons_date_field_id: null,
 					lessons_filters_list: null,
@@ -149,25 +149,25 @@ export default class GhStudyJournalData {
 						},
 						{
 							type: 'ghElement',
-							property: 'data_model.showWeekends',
+							property: 'data_model.showWorkdays',
 							data_model() {
 								return {
-									field_name: 'Show weekends',
-									name_space: 'show_weekends',
+									field_name: 'Show workdays',
+									name_space: 'show_workdays',
 									data_type: 'text_opt',
 									data_model: {
 										options: [
 											{
-												name: 'Show Saturday',
-												value: showWeekendModes.saturday
+												name: 'Show Mon - Fri',
+												value: showWorkdaysOptions.monFri,
 											},
 											{
-												name: 'Show Sunday',
-												value: showWeekendModes.sunday
+												name: 'Show Mon - Sat',
+												value: showWorkdaysOptions.monSat
 											},
 											{
-												name: 'Show both',
-												value: showWeekendModes.showBoth
+												name: 'Show Mon - Sun',
+												value: showWorkdaysOptions.monSun
 											}
 										]
 									}
