@@ -12,6 +12,8 @@ import DatePagination from './DatePagination.js';
 import createCellClickCallback from './click.js';
 import StudentDataPreparation from './DataPreparation/Student.js';
 import SubjectDataPreparation from './DataPreparation/Subject.js';
+
+import { convertMsToDDMM } from './helpers/convertMsToDDMM.js';
 class GhStudyJournal extends GhHtmlElement {
 	// Constructor with super() is required for native web component initialization
 
@@ -206,16 +208,6 @@ function chooseDataPreparationClass(journalMode, scope) {
 	}
 
 	return dataPreparation;
-}
-
-function convertMsToDDMM(milliseconds) {
-	const date_separator = '/';
-
-	const date = new Date(milliseconds);
-	const day = date.getDate();
-	const month = date.getMonth() + 1;
-
-	return [day, month].join(date_separator);
 }
 
 // Register web component only if it is not registered yet
