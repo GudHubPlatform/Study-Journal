@@ -1,211 +1,225 @@
-import GhHtmlElement from "@gudhub/gh-html-element";
-import html from "./studyjournal.html";
-import "./style.scss";
+import GhHtmlElement from '@gudhub/gh-html-element';
+import html from './studyjournal.html';
+import './style.scss';
 
 import { journalModes } from './data.js';
 
-import Handsontable from "handsontable";
-import "handsontable/dist/handsontable.full.min.css";
+import Handsontable from 'handsontable';
+import 'handsontable/dist/handsontable.full.min.css';
 
-import DatePagination from "./DatePagination.js";
+import DatePagination from './DatePagination.js';
 
 import createCellClickCallback from './click.js';
-import StudentDataPreparation from "./DataPreparation/Student.js";
-import SubjectDataPreparation from "./DataPreparation/Subject.js";
+import StudentDataPreparation from './DataPreparation/Student.js';
+import SubjectDataPreparation from './DataPreparation/Subject.js';
 class GhStudyJournal extends GhHtmlElement {
-  // Constructor with super() is required for native web component initialization
+	// Constructor with super() is required for native web component initialization
 
-  constructor() {
-    super();
-    this.table;
-    this.dataPreparation;
-    this.datePagination;
-    this.updateTableFunction;
-  }
+	constructor() {
+		super();
+		this.table;
+		this.dataPreparation;
+		this.datePagination;
 
-  // onInit() is called after parent gh-element scope is ready
+		this.updateTableFunction;
+	}
 
-  onInit() {
-    super.render(html);
+	// onInit() is called after parent gh-element scope is ready
 
-    const { journal_mode, journal_app_id, isPaginationEnabled } =
-      this.scope.field_model.data_model;
+	onInit() {
+		super.render(html);
 
-    this.dataPreparation = chooseDataPreparationClass(journal_mode, this.scope);
+		const { journal_mode, journal_app_id, isPaginationEnabled } =
+			this.scope.field_model.data_model;
 
-    this.renderPagination(isPaginationEnabled);
+		this.dataPreparation = chooseDataPreparationClass(
+			journal_mode,
+			this.scope
+		);
 
-    this.updateTableFunction = () => {
-      this.dataPreparation.initializeItems().then(() => {
-        this.updateTable();
-      });
-    };
+		this.renderPagination(isPaginationEnabled);
 
-    gudhub.on("gh_items_update", { journal_app_id }, this.updateTableFunction);
+		this.updateTableFunction = () => {
+			this.dataPreparation.initializeItems().then(() => {
+				this.updateTable();
+			});
+		};
 
-    this.renderTable();
-  }
+		gudhub.on(
+			'gh_items_update',
+			{ journal_app_id },
+			this.updateTableFunction
+		);
 
-  // disconnectedCallback() is called after the component is destroyed
-  disconnectedCallback() {
-    const { journal_app_id } = this.scope.field_model.data_model;
+		this.renderTable();
+	}
 
-    gudhub.destroy(
-      "gh_items_update",
-      { journal_app_id },
-      this.updateTableFunction,
-    );
-  }
+	// disconnectedCallback() is called after the component is destroyed
+	disconnectedCallback() {
+		const { journal_app_id } = this.scope.field_model.data_model;
 
-  async renderPagination(isPaginationEnabled) {
-    const container = this.querySelector(".pagination");
+		gudhub.destroy(
+			'gh_items_update',
+			{ journal_app_id },
+			this.updateTableFunction
+		);
+	}
 
-    const handleOnChangePagination = () => {
-      this.updateTable();
-    };
+	async renderPagination(isPaginationEnabled) {
+		const container = this.querySelector('.pagination');
 
-    this.datePagination = new DatePagination(
-      container,
-      isPaginationEnabled,
-      handleOnChangePagination,
-    );
-  }
+		const handleOnChangePagination = () => {
+			this.updateTable();
+		};
 
-  async renderTable() {
-    const container = this.querySelector(".journal-table");
+		this.datePagination = new DatePagination(
+			container,
+			isPaginationEnabled,
+			handleOnChangePagination
+		);
+	}
 
-    const customCyrillicCompareFactory = function (sortOrder) {
-      return function customCyrillicCompare(value, nextValue) {
-        return value.localeCompare(nextValue) * (sortOrder === "asc" ? 1 : -1);
-      };
-    };
+	async renderTable() {
+		const container = this.querySelector('.journal-table');
 
-    const updateColHeaderTH = (col, thElement) => {
-      const spanElement = thElement.querySelector(".colHeader");
-      if (spanElement) {
-        const text = spanElement.textContent.trim();
-        if (text.length > 5) {
-          spanElement.textContent = text.split(" ").join("\n");
-        }
-      }
-    };
+		const customCyrillicCompareFactory = function (sortOrder) {
+			return function customCyrillicCompare(value, nextValue) {
+				return (
+					value.localeCompare(nextValue) *
+					(sortOrder === 'asc' ? 1 : -1)
+				);
+			};
+		};
 
-    this.table = new Handsontable(container, {
-      rowHeaders: true,
-      width: "100%",
-      height: "auto",
-      fixedColumnsStart: 1,
-      fixedRowsTop: 0,
-      columnHeaderHeight: 90,
-      licenseKey: "non-commercial-and-evaluation",
-      afterOnCellMouseUp: createCellClickCallback.call(this),
-      afterGetColHeader: updateColHeaderTH,
-      columnSorting: {
-        indicator: false,
-        headerAction: false,
-        compareFunctionFactory: (sortOrder) => {
-          return customCyrillicCompareFactory(sortOrder);
-        },
-      },
-    });
+		const updateColHeaderTH = (col, thElement) => {
+			const spanElement = thElement.querySelector('.colHeader');
+			if (spanElement) {
+				const text = spanElement.textContent.trim();
+				if (text.length > 5) {
+					spanElement.textContent = text.split(' ').join('\n');
+				}
+			}
+		};
 
-    // set table data after table creation
-    this.updateTable();
-  }
+		this.table = new Handsontable(container, {
+			rowHeaders: true,
+			width: '100%',
+			height: 'auto',
+			fixedColumnsStart: 1,
+			fixedRowsTop: 0,
+			columnHeaderHeight: 90,
+			licenseKey: 'non-commercial-and-evaluation',
+			afterOnCellMouseUp: createCellClickCallback.call(this),
+			afterGetColHeader: updateColHeaderTH,
+			columnSorting: {
+				indicator: false,
+				headerAction: false,
+				compareFunctionFactory: (sortOrder) => {
+					return customCyrillicCompareFactory(sortOrder);
+				}
+			}
+		});
 
-  async updateTable() {
-    const dateRange = this.datePagination?.currentDateRange;
-    const [uniqueDates, students_data, mapRowHeaderItemRefIdAndInterpretation] =
-      await this.dataPreparation.getTableData(dateRange);
+		// set table data after table creation
+		this.updateTable();
+	}
 
-    if (
-      !uniqueDates ||
-      !students_data ||
-      !mapRowHeaderItemRefIdAndInterpretation
-    )
-      return;
+	async updateTable() {
+		const dateRange = this.datePagination?.currentDateRange;
+		const [
+			uniqueDates,
+			students_data,
+			mapRowHeaderItemRefIdAndInterpretation
+		] = await this.dataPreparation.getTableData(dateRange);
 
-    const formated_dates = uniqueDates.map((date) => {
-      if (isNaN(date)) {
-        return date;
-      } else {
-        return convertMsToDDMM(date);
-      }
-    });
+		if (
+			!uniqueDates ||
+			!students_data ||
+			!mapRowHeaderItemRefIdAndInterpretation
+		)
+			return;
 
-    // sets dates mm:dd in colHeaders
-    this.table.updateSettings({
-      colHeaders: ["", ...formated_dates],
-    });
+		const formated_dates = uniqueDates.map((date) => {
+			if (isNaN(date)) {
+				return date;
+			} else {
+				return convertMsToDDMM(date);
+			}
+		});
 
-    this.table.loadData(students_data);
+		// sets dates mm:dd in colHeaders
+		this.table.updateSettings({
+			colHeaders: ['', ...formated_dates]
+		});
 
-    // Iterate through rows and set rawData as metadata and interpretatedData as cellData for the first column
-    const rowCount = this.table.countRows();
+		this.table.loadData(students_data);
 
-    for (let row = 0; row < rowCount; row++) {
-      const rowData = this.table.getDataAtCell(row, 0);
+		// Iterate through rows and set rawData as metadata and interpretatedData as cellData for the first column
+		const rowCount = this.table.countRows();
 
-      const metadata = rowData;
+		for (let row = 0; row < rowCount; row++) {
+			const rowData = this.table.getDataAtCell(row, 0);
 
-      this.table.setDataAtCell(
-        row,
-        0,
-        mapRowHeaderItemRefIdAndInterpretation.get(rowData),
-      );
-      this.table.setCellMeta(row, 0, "metadata", metadata);
-    }
+			const metadata = rowData;
 
-    this.sortTable(this.scope.field_model.data_model.sorting_type);
+			this.table.setDataAtCell(
+				row,
+				0,
+				mapRowHeaderItemRefIdAndInterpretation.get(rowData)
+			);
+			this.table.setCellMeta(row, 0, 'metadata', metadata);
+		}
 
-    // sets date in milliseconds as metadata in first row
-    uniqueDates.map((date, col) => {
-      this.table.setCellMeta(0, col + 1, "metadata", date);
-    });
-  }
+		this.sortTable(this.scope.field_model.data_model.sorting_type);
 
-  sortTable(sortOrder) {
-    const options = {
-      column: 0,
-      sortOrder: sortOrder === "" ? "asc" : sortOrder,
-    };
-    this.table.getPlugin("columnSorting").sort(options);
-  }
+		// sets date in milliseconds as metadata in first row
+		uniqueDates.map((date, col) => {
+			this.table.setCellMeta(0, col + 1, 'metadata', date);
+		});
+	}
+
+	sortTable(sortOrder) {
+		const options = {
+			column: 0,
+			sortOrder: sortOrder === '' ? 'asc' : sortOrder
+		};
+		this.table.getPlugin('columnSorting').sort(options);
+	}
 }
 
 function chooseDataPreparationClass(journalMode, scope) {
-  let dataPreparation;
+	let dataPreparation;
 
-  switch (journalMode) {
-    case journalModes.subject.byDate:
-      dataPreparation = new SubjectDataPreparation(scope, true);
-      break;
-    case journalModes.subject.byLessons:
-      dataPreparation = new SubjectDataPreparation(scope);
-      break;
-    case journalModes.student:
-      dataPreparation = new StudentDataPreparation(scope);
-      break;
-    default:
-      console.error('Unknown journal mode');
-      break;
-  }
+	switch (journalMode) {
+		case journalModes.subject.byDate:
+			dataPreparation = new SubjectDataPreparation(scope, true);
+			break;
+		case journalModes.subject.byLessons:
+			dataPreparation = new SubjectDataPreparation(scope);
+			break;
+		case journalModes.student:
+			dataPreparation = new StudentDataPreparation(scope);
+			break;
+		default:
+			console.error('Unknown journal mode');
+			break;
+	}
 
-  return dataPreparation;
+	return dataPreparation;
 }
 
 function convertMsToDDMM(milliseconds) {
-  const date_separator = "/";
+	const date_separator = '/';
 
-  const date = new Date(milliseconds);
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
+	const date = new Date(milliseconds);
+	const day = date.getDate();
+	const month = date.getMonth() + 1;
 
-  return [day, month].join(date_separator);
+	return [day, month].join(date_separator);
 }
 
 // Register web component only if it is not registered yet
 
-if (!customElements.get("gh-study-journal")) {
-  customElements.define("gh-study-journal", GhStudyJournal);
+if (!customElements.get('gh-study-journal')) {
+	customElements.define('gh-study-journal', GhStudyJournal);
 }
