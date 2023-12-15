@@ -111,13 +111,13 @@ export default class GhStudyJournalData {
                 };
               },
             },
-          ],
-          [
             {
+              showIf: `data_model.journal_mode === '${journalModes.subject.byLessons}'`,
               title: "Lessons Settings",
               type: "header",
             },
             {
+              showIf: `data_model.journal_mode === '${journalModes.subject.byLessons}'`,
               type: "ghElement",
               property: "data_model.lessons_app_id",
               data_model: function () {
@@ -143,6 +143,7 @@ export default class GhStudyJournalData {
               },
             },
             {
+              showIf: `data_model.journal_mode === '${journalModes.subject.byLessons}'`,
               type: "ghElement",
               property: "data_model.lessons_date_field_id",
               data_model: function (fieldModel) {
@@ -167,10 +168,12 @@ export default class GhStudyJournalData {
               },
             },
             {
+              showIf: `data_model.journal_mode === '${journalModes.subject.byLessons}'`,
               title: "Lessons Filter",
               type: "header",
             },
             {
+              showIf: `data_model.journal_mode === '${journalModes.subject.byLessons}'`,
               type: "html",
               onInit: function (settingScope) {
                 settingScope.$watch(
@@ -329,6 +332,7 @@ export default class GhStudyJournalData {
               },
             },
             {
+              showIf: `data_model.journal_mode === '${journalModes.subject.byLessons}'`,
               type: "ghElement",
               property: "data_model.subject_field_id",
               data_model: function (fieldModel) {
