@@ -14,6 +14,7 @@ import StudentDataPreparation from './DataPreparation/Student.js';
 import SubjectDataPreparation from './DataPreparation/Subject.js';
 
 import { convertMsToDDMM } from './helpers/convertMsToDDMM.js';
+import resizeElements from './utils/resizeComponent.js';
 class GhStudyJournal extends GhHtmlElement {
 	// Constructor with super() is required for native web component initialization
 
@@ -54,6 +55,7 @@ class GhStudyJournal extends GhHtmlElement {
 		);
 
 		this.renderTable();
+		resizeElements.subscribe();
 	}
 
 	// disconnectedCallback() is called after the component is destroyed
@@ -65,6 +67,8 @@ class GhStudyJournal extends GhHtmlElement {
 			{ journal_app_id },
 			this.updateTableFunction
 		);
+
+		resizeElements.destroy();
 	}
 
 	async renderPagination(isPaginationEnabled) {
