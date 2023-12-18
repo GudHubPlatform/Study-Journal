@@ -63,6 +63,25 @@ export default function createCellClickCallback() {
 				[event_date_field_id]: dateInMilliseconds
 			};
 
+			const currentItem = await gudhub.getItem(scope.appId, scope.itemId);
+
+			// add currentItem as lesson
+			const { fieldForReference } = scope.field_model.data_model;
+			if (fieldForReference) {
+				fields[fieldForReference] = [scope.appId, scope.itemId].join('.');
+			}
+
+			//add fields of source:destination options
+			const sourceAndDestinationArray = scope.field_model.data_model.fieldToFieldOptions;
+			
+			sourceAndDestinationArray.forEach(({ source_field_id, dest_field_id }) => {
+				const foundField = currentItem.fields.find((field => field.field_id == source_field_id));
+				
+				if (foundField) {
+					fields[dest_field_id] = foundField.field_value;
+				}
+			});
+
 			if (isTag) {
 				fields[tag_field_id] = colHeaderMetadata;
 			}

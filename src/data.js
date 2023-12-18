@@ -38,6 +38,7 @@ export default class GhStudyJournalData {
 					students_filters_list: [],
 					journal_app_id: null,
 					student_name_field_id: null,
+					fieldForReference: null,
 					subject_field_id: null,
 					point_field_id: null,
 					event_date_field_id: null,
@@ -46,6 +47,7 @@ export default class GhStudyJournalData {
 					points_filters_list: [],
 					sorting_type: 'asc',
 					view_id: null,
+					fieldToFieldOptions: [],
 					interpretation: [
 						{
 							src: 'form',
@@ -410,6 +412,33 @@ export default class GhStudyJournalData {
 							}
 						},
 						{
+							type: 'ghElement',
+							property: 'data_model.fieldForReference',
+							data_model: function (fieldModel) {
+								return {
+									data_type: 'field',
+									field_name: 'Field for refference',
+									name_space: 'field_for_refference',
+									data_model: {
+										app_id: fieldModel.data_model
+											.journal_app_id
+									}
+								};
+							},
+							onInit: function (settingScope, fieldModel) {
+								settingScope.$watch(
+									function () {
+										return fieldModel.data_model
+											.journal_app_id;
+									},
+									function (newValue) {
+										settingScope.field_model.data_model.app_id =
+											newValue;
+									}
+								);
+							}
+						},
+						{
 							showIf: `data_model.journal_mode === '${journalModes.subject.byLessons}'`,
 							type: 'ghElement',
 							property: 'data_model.subject_field_id',
@@ -582,6 +611,44 @@ export default class GhStudyJournalData {
 								};
 							}
 						}
+					],
+					[
+						{
+							title: 'Item Creation',
+							type: 'header'
+						},
+                        {
+                            type: 'html',
+                            data_model: function (fieldModel) {
+                                return {
+									patterns: [{
+										property: 'source_field_id',
+										prop_name: 'Source Field',
+										type: 'field',
+										display: true,
+										data_model:function(){
+											return {
+												app_id : scope.appId
+											};
+										},
+
+									},
+									{
+										property: 'dest_field_id',
+										prop_name: 'Destination Field',
+										type: 'field',
+										display: true,
+										data_model:function(){
+											return {
+												"app_id" : (fieldModel.data_model.journal_app_id)
+											};
+										},
+									}]
+								};
+                            },
+                            control:
+                                '<gh-option-table items="fieldModel.data_model.fieldToFieldOptions" pattern="field_model.patterns"></gh-option-table>',
+                        },
 					]
 				]
 			}
