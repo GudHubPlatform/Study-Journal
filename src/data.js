@@ -214,8 +214,8 @@ export default class GhStudyJournalData {
 							data_model: function (fieldModel) {
 								return {
 									data_type: 'field',
-									field_name: 'Student Full Name',
-									name_space: 'student_full_name',
+									field_name: 'Lesson date',
+									name_space: 'lesson_date',
 									data_model: {
 										app_id: fieldModel.data_model
 											.lessons_app_id
