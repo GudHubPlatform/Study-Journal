@@ -117,6 +117,7 @@ class GhStudyJournal extends GhHtmlElement {
 			licenseKey: 'non-commercial-and-evaluation',
 			afterOnCellMouseUp: createCellClickCallback.call(this),
 			afterGetColHeader: updateColHeaderTH,
+			editor: false,
 			columnSorting: {
 				indicator: false,
 				headerAction: false,
