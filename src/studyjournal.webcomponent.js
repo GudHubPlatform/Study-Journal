@@ -58,7 +58,7 @@ class GhStudyJournal extends GhHtmlElement {
 		resizeElements.subscribe();
 	}
 
-	// disconnectedCallback() is called after the component is destroyed
+	// disconnectedCallback() is called after the component is destroyed 
 	disconnectedCallback() {
 		const { journal_app_id } = this.scope.field_model.data_model;
 

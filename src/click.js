@@ -138,7 +138,6 @@ async function buildFilterList(
 		tag_field_id,
 		event_date_field_id,
 		student_name_field_id,
-		subject_field_id
 	} = scope.field_model.data_model;
 	const tagFieldInfo = await gudhub.getField(journal_app_id, tag_field_id);
 	const eventDateFieldInfo = await gudhub.getField(

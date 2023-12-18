@@ -439,7 +439,7 @@ export default class GhStudyJournalData {
 							}
 						},
 						{
-							showIf: `data_model.journal_mode === '${journalModes.subject.byLessons}'`,
+							showIf: `data_model.journal_mode === '${journalModes.student}'`,
 							type: 'ghElement',
 							property: 'data_model.subject_field_id',
 							data_model: function (fieldModel) {
