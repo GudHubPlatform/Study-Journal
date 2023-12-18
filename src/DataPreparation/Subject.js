@@ -139,7 +139,7 @@ export default class SubjectDataPreparation {
 		});
 
 		let uniqueDates = this.byDate
-			? insertMissingDates([...uniqueDatesSet])
+			? insertMissingDates([...uniqueDatesSet], dateRange)
 			: mergeSortedDateArrays(
 					[...uniqueDatesSet],
 					await getLessonsDatesFilteredByCurrentAppSubjectAndClass(
@@ -218,8 +218,19 @@ export default class SubjectDataPreparation {
 	}
 }
 
-function insertMissingDates(dateArray) {
+function insertMissingDates(dateArray, dateRange) {
 	const resultArray = [];
+
+	if (dateRange) {
+		if (dateArray[0] !== dateRange.start) {
+			dateArray.unshift(dateRange.start + 86400000);
+		}
+		if (dateArray[dateArray.length - 1] !== dateRange.end) {
+			dateArray.push(dateRange.end);
+			console.log(dateRange.end);
+		}
+	}
+	
 	const isDateString = (date) => typeof date === 'string';
 
 	for (let i = 0; i < dateArray.length; i++) {
