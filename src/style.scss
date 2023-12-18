@@ -1,3 +1,26 @@
+$scrollbar-width: 6px;
+
+@mixin scroll {
+    &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    &::-webkit-scrollbar {
+        width: $scrollbar-width;
+        height: $scrollbar-width;
+        background-color: #f5f5f5;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: 33px;
+        background: #b9b9b9;
+
+        &:hover {
+            background: #0d99ff;
+        }
+    }
+}
+
 gh-study-journal {
 	width: 95%;
 
@@ -95,6 +118,13 @@ gh-study-journal {
 			cursor: none;
 		}
 	}
+
+	.table-scroll {
+        overflow: auto;
+        position: relative;
+
+        @include scroll();
+    }
 
 	.journal-table {
 		position: relative;

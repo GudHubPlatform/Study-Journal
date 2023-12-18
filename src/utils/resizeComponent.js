@@ -14,8 +14,8 @@ function setMaxWidth(id) {
 }
 
 function onWindowResize () {
-    const elementsToSetHeigth = ['journal-table'];
-    const elementsToSetWidth = ['journal-table'];
+    const elementsToSetHeigth = ['table-scroll'];
+    const elementsToSetWidth = ['table-scroll'];
     elementsToSetHeigth.forEach(id => {
         setMaxHeight(id);
     });
