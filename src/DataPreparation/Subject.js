@@ -227,7 +227,6 @@ function insertMissingDates(dateArray, dateRange) {
 		}
 		if (dateArray[dateArray.length - 1] !== dateRange.end) {
 			dateArray.push(dateRange.end);
-			console.log(dateRange.end);
 		}
 	}
 	
