@@ -2,7 +2,7 @@ function setMaxHeight(id) {
     var element = document.getElementById(id);
     var elementRect = element.getBoundingClientRect();
     var maxHeight = window.innerHeight - elementRect.top;
-    element.style.maxHeight = maxHeight - 20 + 'px';
+    element.style.maxHeight = maxHeight + 'px';
 }
 
 function setMaxWidth(id) {
