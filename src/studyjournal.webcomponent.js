@@ -107,6 +107,8 @@ class GhStudyJournal extends GhHtmlElement {
 			}
 		};
 
+		const clickCallback = createCellClickCallback.call(this);
+
 		this.table = new Handsontable(container, {
 			rowHeaders: true,
 			width: '100%',
@@ -115,7 +117,23 @@ class GhStudyJournal extends GhHtmlElement {
 			fixedRowsTop: 0,
 			columnHeaderHeight: 90,
 			licenseKey: 'non-commercial-and-evaluation',
-			afterOnCellMouseUp: createCellClickCallback.call(this),
+			selectionMode: 'single',
+			afterOnCellMouseUp: function(event, coords, td) {
+				console.log(event);
+				if (event.which === 1) {
+					clickCallback.call(this, event, coords);
+					return;
+				}
+
+				var now = new Date().getTime();
+				// check if dbl-clicked within 1/5th of a second
+				if(!(td.lastClick && now - td.lastClick < 200)) {
+					td.lastClick = now;
+					return; // no double-click detected
+				}
+				// double-click
+				clickCallback.call(this, event, coords);
+			},
 			afterGetColHeader: updateColHeaderTH,
 			editor: false,
 			columnSorting: {
