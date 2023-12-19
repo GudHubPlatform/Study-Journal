@@ -7,7 +7,7 @@ export default function createCellClickCallback() {
 	const dataPreparation = this.dataPreparation;
 
 	return async function handleMouseClick(event, coords) {
-		if (event.which !== 1) {
+		if (event.which !== 1 && event.which !== 0) {
 			return;
 		}
 
