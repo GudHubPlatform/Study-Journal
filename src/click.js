@@ -30,7 +30,7 @@ export default function createCellClickCallback() {
 		const isTag = isNaN(colHeaderMetadata);
 
 		const dateInMilliseconds = isTag
-			? findPreviousDateMetadata(col)
+			? findPreviousDateMetadata(this, col)
 			: colHeaderMetadata;
 
 		const items = await gudhub.getItems(journal_app_id, false);
@@ -109,12 +109,12 @@ export default function createCellClickCallback() {
 	};
 }
 
-function findPreviousDateMetadata(col) {
+function findPreviousDateMetadata(table, col) {
 	let dateMetadata;
 	let minusIndex = 1;
 
 	while (isNaN(dateMetadata)) {
-		dateMetadata = this.getCellMeta(0, col - minusIndex).metadata;
+		dateMetadata = table.getCellMeta(0, col - minusIndex).metadata;
 		minusIndex++;
 	}
 
