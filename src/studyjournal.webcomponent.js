@@ -149,8 +149,7 @@ class GhStudyJournal extends GhHtmlElement {
 	}
 
 	async updateTable() {
-		const dateRange = this.datePagination?.currentDateRange;	
-		console.log(dateRange);
+		const dateRange = this.datePagination?.currentDateRange;
 		const [
 			uniqueDates,
 			students_data,

@@ -119,7 +119,6 @@ export default class DatePagination {
 	getRange28DaysToday() {
 		const now = new Date();
 		now.setHours(0, 0, 0, 0);
-		console.log(now);
 		const currentDayOfWeek = now.getDay();
 		const daysUntilSunday = 7 - currentDayOfWeek;
 		const endDate = new Date(now);
