@@ -1,5 +1,6 @@
 import { FilterItems } from '../utils/FilterItems.js';
 import { filterDatesWeekends } from '../helpers/filterDatesWeekends.js';
+import parseUniqueDates from '../utils/parseUniqueDates.js';
 
 export default class StudentDataPreparation {
 	constructor(scope) {
@@ -160,18 +161,9 @@ export default class StudentDataPreparation {
 			(a, b) => new Date(a.event_date) - new Date(b.event_date)
 		);
 
-		const uniqueDatesSet = new Set();
+		let uniqueDates = parseUniqueDates(students_data);
 
-		students_data.forEach((item) => {
-			if (item.event_date) {
-				uniqueDatesSet.add(item.event_date);
-			}
-			if (item.tag) {
-				uniqueDatesSet.add(item.tag);
-			}
-		});
-
-		let uniqueDates = [...uniqueDatesSet];
+		uniqueDates = [...uniqueDates];
 		uniqueDates = filterDatesWeekends(uniqueDates, this.scope);
 
 		const twoDimensionalArray = [];
