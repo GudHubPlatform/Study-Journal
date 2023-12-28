@@ -119,7 +119,6 @@ class GhStudyJournal extends GhHtmlElement {
 			licenseKey: 'non-commercial-and-evaluation',
 			selectionMode: 'single',
 			afterOnCellMouseUp: function(event, coords, td) {
-				console.log(event);
 				if (event.which === 1) {
 					clickCallback.call(this, event, coords);
 					return;
@@ -150,7 +149,8 @@ class GhStudyJournal extends GhHtmlElement {
 	}
 
 	async updateTable() {
-		const dateRange = this.datePagination?.currentDateRange;
+		const dateRange = this.datePagination?.currentDateRange;	
+		console.log(dateRange);
 		const [
 			uniqueDates,
 			students_data,
