@@ -1,5 +1,6 @@
 import { FilterItems } from '../utils/FilterItems.js';
 import { filterDatesWeekends } from '../helpers/filterDatesWeekends.js';
+import parseUniqueDates from '../utils/parseUniqueDates.js';
 export default class SubjectDataPreparation {
 	constructor(scope, byDate = false) {
 		this.scope = scope;
@@ -127,21 +128,12 @@ export default class SubjectDataPreparation {
 			(a, b) => new Date(a.event_date) - new Date(b.event_date)
 		);
 
-		const uniqueDatesSet = new Set();
+		let uniqueDates = parseUniqueDates(students_data);
 
-		students_data.forEach((item) => {
-			if (item.event_date) {
-				uniqueDatesSet.add(item.event_date);
-			}
-			if (item.tag) {
-				uniqueDatesSet.add(item.tag);
-			}
-		});
-
-		let uniqueDates = this.byDate
-			? insertMissingDates([...uniqueDatesSet], dateRange)
+		uniqueDates = this.byDate
+			? insertMissingDates([...uniqueDates], dateRange)
 			: mergeSortedDateArrays(
-					[...uniqueDatesSet],
+					[...uniqueDates],
 					await getLessonsDatesFilteredByCurrentAppSubjectAndClass(
 						this.scope,
 						dateRange
@@ -150,7 +142,6 @@ export default class SubjectDataPreparation {
 		uniqueDates = filterDatesWeekends(uniqueDates, this.scope);
 
 		const twoDimensionalArray = [];
-
 		// Iterate through each unique student name.
 		studentNameMapWithInterpretations.forEach(
 			(studentName, studentNameRefId) => {
@@ -222,10 +213,17 @@ function insertMissingDates(dateArray, dateRange) {
 	const resultArray = [];
 
 	if (dateRange) {
-		if (dateArray[0] !== dateRange.start) {
+		const checkForDatesDayEqual = (a, b) => {
+			const aDateDay = (new Date(a)).getDate();
+			const bDateDay = (new Date(b)).getDate();
+
+			return aDateDay === bDateDay;
+		};
+		if (!checkForDatesDayEqual(dateArray[0], dateRange.start)) {
 			dateArray.unshift(dateRange.start);
 		}
-		if (dateArray[dateArray.length - 1] !== dateRange.end) {
+		const lastDate = getLastDateThatIsNotString(dateArray);
+		if (!checkForDatesDayEqual(lastDate, dateRange.end)) {
 			dateArray.push(dateRange.end);
 		}
 	}
@@ -233,26 +231,20 @@ function insertMissingDates(dateArray, dateRange) {
 	const isDateString = (date) => typeof date === 'string';
 
 	for (let i = 0; i < dateArray.length; i++) {
-		if (isDateString(dateArray[i])) {
-			// Пропускаємо стрічки, додаючи їх без змін
-			resultArray.push(dateArray[i]);
-		} else {
-			resultArray.push(dateArray[i]);
+		resultArray.push(dateArray[i]);
 
-			// Перевіряємо чи є пропущені дати і додаємо їх, якщо потрібно
-			if (i < dateArray.length - 1) {
-				const currentTimestamp = dateArray[i];
-				const nextTimestamp = dateArray[i + 1];
-				const diff = nextTimestamp - currentTimestamp;
+		if (i < dateArray.length - 1 && !isDateString(dateArray[i + 1])) {
+			const currentTimestamp = !isNaN(resultArray[resultArray.length - 1]) ? resultArray[resultArray.length - 1] : getLastDateThatIsNotString(resultArray);
+			const nextTimestamp = dateArray[i + 1];
+			const diff = nextTimestamp - currentTimestamp;
 
-				if (diff > 86400000) {
-					// 86400000 мілісекунд у добі
-					const numberOfDays = Math.floor(diff / 86400000);
+			if (diff > 86400000) {
+				// 86400000 мілісекунд у добі
+				const numberOfDays = Math.floor(diff / 86400000);
 
-					for (let j = 1; j < numberOfDays; j++) {
-						const missingDate = currentTimestamp + j * 86400000;
-						resultArray.push(missingDate);
-					}
+				for (let j = 1; j < numberOfDays; j++) {
+					const missingDate = currentTimestamp + j * 86400000;
+					resultArray.push(missingDate);
 				}
 			}
 		}
@@ -372,4 +364,13 @@ function mergeSortedDateArrays(dataArray, additionalArray) {
 	}
 
 	return resultArray;
+}
+
+
+function getLastDateThatIsNotString(dates) {
+	for (let i = dates.length - 1; i > 0; i--) {
+		if (!isNaN(dates[i])) {
+			return dates[i];
+		}
+	}
 }
