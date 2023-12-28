@@ -128,6 +128,7 @@ export default class DatePagination {
 		const startDate = new Date(endDate);
 		startDate.setDate(endDate.getDate() - (dateRangeLength - 1));
 		const startMilliseconds = startDate.getTime();
+		endDate.setHours(23, 59, 59);
 		const endMilliseconds = endDate.getTime();
 
 		return { start: startMilliseconds, end: endMilliseconds };
