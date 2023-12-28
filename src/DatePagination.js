@@ -3,7 +3,9 @@ export default class DatePagination {
 		this.container = container;
 		this.onChange = onChange;
 
-		this.dateRangeForToday = this.getRange28DaysToday();
+		this.dateRangeLength = 28;
+
+		this.dateRangeForToday = this.getRangeDaysToday(this.dateRangeLength);
 		this.currentDateRange = this.dateRangeForToday;
 
 		this.buttons_container;
@@ -116,7 +118,7 @@ export default class DatePagination {
 		}
 	}
 
-	getRange28DaysToday() {
+	getRangeDaysToday(dateRangeLength) {
 		const now = new Date();
 		now.setHours(0, 0, 0, 0);
 		const currentDayOfWeek = now.getDay();
@@ -124,7 +126,7 @@ export default class DatePagination {
 		const endDate = new Date(now);
 		endDate.setDate(now.getDate() + daysUntilSunday);
 		const startDate = new Date(endDate);
-		startDate.setDate(endDate.getDate() - 28);
+		startDate.setDate(endDate.getDate() - (dateRangeLength - 1));
 		const startMilliseconds = startDate.getTime();
 		const endMilliseconds = endDate.getTime();
 
@@ -156,7 +158,6 @@ export default class DatePagination {
 		const endMilliseconds = dateRange.end;
 
 		const startDate = new Date(startMilliseconds);
-		startDate.setHours(24);
 		const endDate = new Date(endMilliseconds);
 
 		const startOptions = { year: 'numeric', month: 'long', day: 'numeric' };

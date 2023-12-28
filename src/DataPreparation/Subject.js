@@ -223,7 +223,7 @@ function insertMissingDates(dateArray, dateRange) {
 
 	if (dateRange) {
 		if (dateArray[0] !== dateRange.start) {
-			dateArray.unshift(dateRange.start + 86400000);
+			dateArray.unshift(dateRange.start);
 		}
 		if (dateArray[dateArray.length - 1] !== dateRange.end) {
 			dateArray.push(dateRange.end);
