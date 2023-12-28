@@ -29,19 +29,20 @@ export default function createCellClickCallback() {
 		const colHeaderMetadata = this.getCellMeta(0, col).metadata;
 		const isTag = isNaN(colHeaderMetadata);
 
-		const dateInMilliseconds = isTag
+		const eventDate = isTag
 			? findPreviousDateMetadata(this, col)
 			: colHeaderMetadata;
 
 		const items = await gudhub.getItems(journal_app_id, false);
 
-		const filterList = await buildFilterList(
+		const filterList = await buildFilterList({
 			scope,
 			isTag,
-			colHeaderMetadata,
+			tag: isTag ? colHeaderMetadata : null,
+			eventDate,
 			rowMetadata,
 			dataPreparation
-		);
+		});
 
 		const filteredItemsBySettingsFilter =
 			await FilterItems.ByFilterSettings(
@@ -60,7 +61,7 @@ export default function createCellClickCallback() {
 		if (filteredItems.length === 0) {
 			const fields = {
 				[student_name_field_id]: rowMetadata,
-				[event_date_field_id]: dateInMilliseconds
+				[event_date_field_id]: eventDate
 			};
 
 			const currentItem = await gudhub.getItem(scope.appId, scope.itemId);
@@ -92,7 +93,7 @@ export default function createCellClickCallback() {
 				fields
 			};
 
-			showGhDialog(fieldModel);
+			showGhDialog(scope, fieldModel);
 		} else {
 			const { item_id, fields } = filteredItems[0];
 			const fieldsObject = getFieldsObject(fields);
@@ -104,7 +105,7 @@ export default function createCellClickCallback() {
 				fields: fieldsObject
 			};
 
-			showGhDialog(fieldModel);
+			showGhDialog(scope, fieldModel);
 		}
 	};
 }
@@ -126,13 +127,14 @@ function createFormattedDateRange(dateInMilliseconds) {
 	return `${dateInMilliseconds}:${dateInMilliseconds + oneDayInMilliseconds}`;
 }
 
-async function buildFilterList(
+async function buildFilterList({
 	scope,
 	isTag,
-	colHeaderMetadata,
+	tag,
+	eventDate,
 	rowMetadata,
 	dataPreparation
-) {
+}) {
 	const {
 		journal_app_id,
 		tag_field_id,
@@ -151,14 +153,14 @@ async function buildFilterList(
 			field_id: tagFieldInfo.field_id,
 			search_type: isTag ? 'equal_and' : 'value',
 			selected_search_option_variable: 'Value',
-			valuesArray: isTag ? [colHeaderMetadata] : ['false']
+			valuesArray: isTag ? tag : ['false']
 		},
 		{
 			data_type: eventDateFieldInfo.data_type,
 			field_id: eventDateFieldInfo.field_id,
 			search_type: 'range',
 			selected_search_option_variable: 'Value',
-			valuesArray: [createFormattedDateRange(colHeaderMetadata)]
+			valuesArray: [createFormattedDateRange(eventDate)]
 		}
 	];
 
@@ -206,18 +208,25 @@ function getFieldsObject(fields) {
 
 function onApplyFunction(item) {
 	const { appId } = this.fieldModel;
-	const fields = [];
+	const newFields = [];
 
 	for (const [element_id, value] of Object.entries(item.fields)) {
-		fields.push({ field_id: element_id, field_value: value });
+		newFields.push({ field_id: element_id, field_value: value });
 	}
 
 	const itemData = {
-		fields
+		fields: newFields
 	};
 
-	// if item doesnt have [itemId], then we need to create
-	if (item.itemId) {
+	const { tag_field_id } = this.parentScope.field_model.data_model;
+
+	const isTagExistInOldFields = Boolean(this.filledFields[tag_field_id]);
+	const isTagExistNewFields = newFields.some((field) => field.field_id === tag_field_id);
+
+	// if item doesnt have [itemId], then item doesnt exist and we will create it
+	if (item.itemId && !isTagExistInOldFields && isTagExistNewFields) {
+		gudhub.addNewItems(appId, [itemData]);
+	} else if (item.itemId) {
 		itemData.item_id = item.itemId;
 		gudhub.updateItems(appId, [itemData]);
 	} else {
@@ -227,7 +236,8 @@ function onApplyFunction(item) {
 	this.cancel();
 }
 
-function showGhDialog(fieldModel) {
+function showGhDialog(parentScope, fieldModel) {
+	const filledFields = fieldModel.fields;
 	const GhDialog = gudhub.ghconstructor.angularInjector.get('GhDialog');
 
 	GhDialog.show({
@@ -257,7 +267,8 @@ function showGhDialog(fieldModel) {
 			'fieldModel',
 			function ($scope, fieldModel) {
 				$scope.fieldModel = angular.copy(fieldModel);
-
+				$scope.parentScope = parentScope;
+				$scope.filledFields = filledFields;
 				$scope.onApplyFunction = onApplyFunction.bind($scope);
 			}
 		]
