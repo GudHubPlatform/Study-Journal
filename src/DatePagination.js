@@ -134,6 +134,7 @@ export default class DatePagination {
 		this.dateRangeLength = +daysLength;
 
 		const newDateRange = this.getRangeDaysToday(this.dateRangeLength);
+		this.dateRangeForToday = newDateRange;
 		this.updateCurrentDateRange(newDateRange);
 
 		this.onChange();
@@ -163,9 +164,11 @@ export default class DatePagination {
 		const now = new Date();
 		now.setHours(0, 0, 0, 0);
 		const currentDayOfWeek = now.getDay();
-		const daysUntilSunday = 7 - currentDayOfWeek;
 		const endDate = new Date(now);
-		endDate.setDate(now.getDate() + daysUntilSunday);
+		if (dateRangeLength > 1) {
+			const daysUntilSunday = 7 - currentDayOfWeek;
+			endDate.setDate(now.getDate() + daysUntilSunday);
+		}
 		const startDate = new Date(endDate);
 		startDate.setDate(endDate.getDate() - (dateRangeLength - 1));
 		const startMilliseconds = startDate.getTime();
