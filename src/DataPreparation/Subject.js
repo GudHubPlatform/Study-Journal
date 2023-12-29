@@ -212,6 +212,8 @@ export default class SubjectDataPreparation {
 function insertMissingDates(dateArray, dateRange) {
 	const resultArray = [];
 
+	const dayMilliseconds = 24 * 60 * 60 * 1000;
+
 	if (dateRange) {
 		const checkForDatesDayEqual = (a, b) => {
 			const aDateDay = (new Date(a)).getDate();
@@ -222,7 +224,7 @@ function insertMissingDates(dateArray, dateRange) {
 		if (!checkForDatesDayEqual(dateArray[0], dateRange.start)) {
 			dateArray.unshift(dateRange.start);
 		}
-		if (dateArray.length > 1) {
+		if (new Date(dateRange.end) - new Date(dateRange.start) > dayMilliseconds) {
 			const lastDate = getLastDateThatIsNotString(dateArray);
 			if (!checkForDatesDayEqual(lastDate, dateRange.end)) {
 				dateArray.push(dateRange.end);
@@ -240,12 +242,12 @@ function insertMissingDates(dateArray, dateRange) {
 			const nextTimestamp = dateArray[i + 1];
 			const diff = nextTimestamp - currentTimestamp;
 
-			if (diff > 86400000) {
+			if (diff > dayMilliseconds) {
 				// 86400000 мілісекунд у добі
-				const numberOfDays = Math.floor(diff / 86400000);
+				const numberOfDays = Math.floor(diff / dayMilliseconds);
 
 				for (let j = 1; j < numberOfDays; j++) {
-					const missingDate = currentTimestamp + j * 86400000;
+					const missingDate = currentTimestamp + j * dayMilliseconds;
 					resultArray.push(missingDate);
 				}
 			}
