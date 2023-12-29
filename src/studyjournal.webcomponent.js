@@ -97,12 +97,27 @@ class GhStudyJournal extends GhHtmlElement {
 			};
 		};
 
-		const updateColHeaderTH = (col, thElement) => {
+		const updateColHeaderTH = function(col, thElement) {
 			const spanElement = thElement.querySelector('.colHeader');
 			if (spanElement) {
 				const text = spanElement.textContent.trim();
 				if (text.length > 5) {
 					spanElement.textContent = text.split(' ').join('\n');
+				}
+			}
+			if (spanElement) {
+				const thDate = spanElement.textContent;
+				const today = new Date();
+				
+				const [day, month] = thDate.split('/').map(Number);
+				
+				const isEqual = today.getDate() === day && (today.getMonth() + 1) === month;
+
+				if (isEqual && !thElement.classList.contains('todayColumn')) {
+					thElement.classList.add('todayColumn');
+					for (let i = 0; i < this.countRows(); i++) {
+						this.setCellMeta(i, col, 'className', 'todayColumn');
+					}
 				}
 			}
 		};
