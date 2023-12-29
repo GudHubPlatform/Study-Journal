@@ -3,7 +3,7 @@ export default class DatePagination {
 		this.container = container;
 		this.onChange = onChange;
 
-		this.dateRangeLength = 7;
+		this.dateRangeLength = 28;
 
 		this.dateRangeForToday = this.getRangeDaysToday(this.dateRangeLength);
 		this.currentDateRange = this.dateRangeForToday;
