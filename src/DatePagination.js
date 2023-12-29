@@ -215,6 +215,14 @@ export default class DatePagination {
 		);
 		const endDateText = endDate.toLocaleDateString(undefined, endOptions);
 
-		return `${startDateText} - ${endDateText}`;
+		const cutMonthName = (dateStr) => {
+			const splitted = dateStr.split(' ');
+			splitted[0] = splitted[0].slice(0, 3);
+			const result = splitted.join(' ');
+
+			return result;
+		};
+
+		return `${cutMonthName(startDateText)} - ${cutMonthName(endDateText)}`;
 	}
 }
