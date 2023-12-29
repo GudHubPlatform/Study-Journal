@@ -137,22 +137,31 @@ gh-study-journal {
 		th {
 			div {
 				height: 100%;
-
+				
 				display: flex;
 				justify-content: center;
 				align-items: center;
-
+				
 				.colHeader {
 					writing-mode: vertical-rl;
-
+					
 					&.writing-mode-inherit {
 						writing-mode: inherit;
 					}
 					white-space: pre-line;
 				}
 			}
+			&.todayColumn {
+				background-color: #008cff3f;
+			}
 		}
-
+		
+		td {
+			&.todayColumn {
+				background-color: #008cff1e;
+			}
+		}
+		
 		.ht_master {
 			.wtHolder {
 				&::-webkit-scrollbar-track {
