@@ -113,12 +113,10 @@ class GhStudyJournal extends GhHtmlElement {
 				
 				const isEqual = today.getDate() === day && (today.getMonth() + 1) === month;
 
-				if (isEqual && !thElement.classList.contains('todayColumn')) {
+				if (isEqual) {
 					thElement.classList.add('todayColumn');
-					for (let i = 0; i < this.countRows(); i++) {
-						this.setCellMeta(i, col, 'className', 'todayColumn');
-					}
 				}
+
 			}
 		};
 
@@ -133,6 +131,19 @@ class GhStudyJournal extends GhHtmlElement {
 			columnHeaderHeight: 90,
 			licenseKey: 'non-commercial-and-evaluation',
 			selectionMode: 'single',
+			afterLoadData: function() {
+				const headersDate = this.getColHeader();
+
+				const today = new Date();
+				const strDayMonth = [today.getDate(), today.getMonth() + 1].join('/');
+
+				const colIndex = headersDate.findIndex((date) => date === strDayMonth);
+				if (colIndex > 1) {
+					for (let i = 0; i < this.countRows(); i++) {
+						this.setCellMeta(i, colIndex, 'className', 'todayColumn');
+					}
+				}
+			},
 			afterOnCellMouseUp: function(event, coords, td) {
 				if (event.which === 1) {
 					clickCallback.call(this, event, coords);
