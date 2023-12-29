@@ -131,7 +131,7 @@ export default class DatePagination {
 		});
 		this.rangeButtonsMap[daysLength].classList.add('selected');
 
-		this.dateRangeLength = daysLength;
+		this.dateRangeLength = +daysLength;
 
 		const newDateRange = this.getRangeDaysToday(this.dateRangeLength);
 		this.updateCurrentDateRange(newDateRange);
@@ -169,6 +169,7 @@ export default class DatePagination {
 		const startDate = new Date(endDate);
 		startDate.setDate(endDate.getDate() - (dateRangeLength - 1));
 		const startMilliseconds = startDate.getTime();
+		endDate.setHours(23, 59)
 		const endMilliseconds = endDate.getTime();
 
 		return { start: startMilliseconds, end: endMilliseconds };
@@ -177,6 +178,10 @@ export default class DatePagination {
 	calculateRangeMove(range, addDays = false) {
 		const startDate = new Date(range.start);
 		const endDate = new Date(range.end);
+		const getDMY = (ms) => {
+			const date = new Date(ms);
+			return `${date.getDate()}:${date.getMonth()}:${date.getFullYear()}`;
+		};
 
 		if (addDays) {
 			startDate.setDate(startDate.getDate() + this.dateRangeLength);

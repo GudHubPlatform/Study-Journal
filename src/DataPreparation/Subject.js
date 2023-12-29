@@ -222,9 +222,11 @@ function insertMissingDates(dateArray, dateRange) {
 		if (!checkForDatesDayEqual(dateArray[0], dateRange.start)) {
 			dateArray.unshift(dateRange.start);
 		}
-		const lastDate = getLastDateThatIsNotString(dateArray);
-		if (!checkForDatesDayEqual(lastDate, dateRange.end)) {
-			dateArray.push(dateRange.end);
+		if (dateArray.length > 1) {
+			const lastDate = getLastDateThatIsNotString(dateArray);
+			if (!checkForDatesDayEqual(lastDate, dateRange.end)) {
+				dateArray.push(dateRange.end);
+			}
 		}
 	}
 	
