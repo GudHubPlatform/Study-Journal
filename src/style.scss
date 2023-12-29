@@ -25,7 +25,7 @@ gh-study-journal {
 	width: 95%;
 
 	.pagination {
-		max-width: 400px;
+		max-width: 550px;
 
 		display: flex;
 		justify-content: space-between;
@@ -33,6 +33,25 @@ gh-study-journal {
 
 		&.display-none {
 			display: none;
+		}
+
+		div {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 5px;
+
+			button {
+				padding: 5px;
+				background-color: #007aff;
+				border: none;
+				color: #fff;
+				transition: all .3 ease;
+
+				&.selected {
+					background-color: #5e85af;
+				}
+			}
 		}
 
 		.icon-button {
