@@ -25,11 +25,11 @@ gh-study-journal {
 	width: 95%;
 
 	.pagination {
-		max-width: 550px;
-
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+
+		margin-bottom: 5px;
 
 		&.display-none {
 			display: none;
@@ -135,6 +135,16 @@ gh-study-journal {
 			pointer-events: none;
 			opacity: 0.5;
 			cursor: none;
+		}
+
+		@media screen and (max-width: 600px) {
+			& {
+				max-width: 400px;
+				width: fit-content;
+				margin-left: 20px;
+				flex-direction: column;
+				align-items: center;
+			}
 		}
 	}
 

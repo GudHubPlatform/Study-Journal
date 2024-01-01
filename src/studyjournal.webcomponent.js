@@ -30,6 +30,7 @@ class GhStudyJournal extends GhHtmlElement {
 	// onInit() is called after parent gh-element scope is ready
 
 	onInit() {
+		window.isMobile = window.screen.width <= 600;
 		super.render(html);
 
 		const { journal_mode, journal_app_id, isPaginationEnabled } =

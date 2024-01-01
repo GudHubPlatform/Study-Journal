@@ -18,10 +18,8 @@ export default class DatePagination {
 	}
 
 	createElements() {
-		this.left = document.createElement('div');
-		this.left.classList.add('left');
-		this.right = document.createElement('div');
-		this.right.classList.add('right');
+		this.left = this.container.querySelector('.left');
+		this.right = this.container.querySelector('.right');
 
 		this.prevIconSpan = document.createElement('span');
 		this.prevIconSpan.innerHTML =
@@ -30,7 +28,7 @@ export default class DatePagination {
 		this.nextIconSpan.innerHTML =
 			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M294.1 256L167 129c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.3 34 0L345 239c9.1 9.1 9.3 23.7.7 33.1L201.1 417c-4.7 4.7-10.9 7-17 7s-12.3-2.3-17-7c-9.4-9.4-9.4-24.6 0-33.9l127-127.1z"></path></svg>';
 
-		this.buttons_container = document.createElement('div');
+		this.buttons_container = this.container.querySelector('.buttons-container');
 
 		this.prevButton = document.createElement('button');
 		this.prevButton.classList.add('icon-button', 'pagination-button');
@@ -40,11 +38,9 @@ export default class DatePagination {
 		this.nextButton.classList.add('icon-button', 'pagination-button');
 		this.nextButton.appendChild(this.nextIconSpan);
 
-		this.todayButton = document.createElement('button');
-		this.todayButton.classList.add('pagination-button');
-		this.todayButton.textContent = 'Today';
+		this.todayButton = this.container.querySelector('.today-button');
 
-		this.textSpan = document.createElement('span');
+		this.textSpan = this.container.querySelector('.dateRange');
 
 		this.monthButton = document.createElement('button');
 		this.monthButton.textContent = 'month';
@@ -54,17 +50,21 @@ export default class DatePagination {
 		this.dayButton = document.createElement('button');
 		this.dayButton.textContent = 'day';
 
-		this.container.appendChild(this.left);
-		this.container.appendChild(this.right);
-		this.left.appendChild(this.buttons_container);
 		this.buttons_container.appendChild(this.prevButton);
 		this.buttons_container.appendChild(this.nextButton);
-		this.left.appendChild(this.textSpan);
-		this.updateTextDate();
-		this.left.appendChild(this.todayButton);
 		this.right.appendChild(this.monthButton);
 		this.right.appendChild(this.weekButton);
 		this.right.appendChild(this.dayButton);
+
+		if (window.isMobile) {
+			this.right.appendChild(this.buttons_container);
+			this.right.appendChild(this.todayButton);
+			this.right.appendChild(this.monthButton);
+			this.right.appendChild(this.weekButton);
+			this.right.appendChild(this.dayButton);
+		}
+
+		this.updateTextDate();
 
 		this.rangeButtonsMap = {
 			28: this.monthButton,

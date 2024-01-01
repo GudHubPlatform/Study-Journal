@@ -1,14 +1,17 @@
 function setMaxHeight(id) {
-    var element = document.getElementById(id);
-    var elementRect = element.getBoundingClientRect();
-    var maxHeight = window.innerHeight - elementRect.top;
+    if (window.isMobile) {
+        return;
+    }
+    const element = document.getElementById(id);
+    const elementRect = element.getBoundingClientRect();
+    const maxHeight = window.innerHeight - elementRect.top;
     element.style.maxHeight = maxHeight + 'px';
 }
 
 function setMaxWidth(id) {
-    var element = document.getElementById(id);
-    var elementRect = element.getBoundingClientRect();
-    var maxWidth = window.innerWidth - elementRect.left;
+    const element = document.getElementById(id);
+    const elementRect = element.getBoundingClientRect();
+    const maxWidth = window.innerWidth - elementRect.left;
 
     element.style.maxWidth = maxWidth - 20 + 'px';
 }
