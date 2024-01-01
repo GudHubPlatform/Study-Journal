@@ -412,6 +412,7 @@ export default class GhStudyJournalData {
 							}
 						},
 						{
+							showIf: `data_model.journal_mode !== '${journalModes.student}'`,
 							type: 'ghElement',
 							property: 'data_model.fieldForReference',
 							data_model: function (fieldModel) {
