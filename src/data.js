@@ -554,7 +554,7 @@ export default class GhStudyJournalData {
 							data_model() {
 								return {
 									field_name: 'Items Pagination',
-									name_space: 'Items Pagination',
+									name_space: 'items_pagination',
 									data_type: 'boolean',
 									data_model: {}
 								};
