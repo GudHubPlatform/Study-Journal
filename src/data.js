@@ -22,6 +22,7 @@ export default class GhStudyJournalData {
 			constructor: 'field',
 			name: 'Study Journal',
 			icon: 'text_icon',
+			type: 'study_journal',
 			model: {
 				field_id: 0,
 				field_name: 'Study Journal',
