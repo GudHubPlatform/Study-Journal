@@ -287,8 +287,7 @@ async function getLessonsDatesFilteredByCurrentAppSubjectAndClass(
 		filteredByPagination,
 		modifiedFilterList
 	);
-	console.log('filteredByPagination', filteredByPagination);
-	console.log('filteredItems', filteredItems);
+	
 	const lessonsDates = new Set();
 // debugger
 	filteredItems.forEach((item) => {
