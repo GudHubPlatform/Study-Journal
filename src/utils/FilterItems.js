@@ -32,15 +32,12 @@ export class FilterItems {
 		return byStudentFilter;
 	}
 
-	static async ByPagination(items, scope, dateRange) {
+	static async ByPagination(items, app_id, date_field_id, dateRange) {
 		if (!dateRange) return items;
 
-		const { journal_app_id, event_date_field_id } =
-			scope.field_model.data_model;
-
 		const eventDateFieldInfo = await gudhub.getField(
-			journal_app_id,
-			event_date_field_id
+			app_id,
+			date_field_id
 		);
 
 		if (!eventDateFieldInfo) {
@@ -52,7 +49,7 @@ export class FilterItems {
 		const filterList = [
 			{
 				data_type: eventDateFieldInfo.data_type,
-				field_id: event_date_field_id,
+				field_id: date_field_id,
 				search_type: 'range',
 				selected_search_option_variable: 'Value',
 				valuesArray: [`${start}: ${end}`]

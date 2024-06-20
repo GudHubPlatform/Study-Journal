@@ -11,10 +11,15 @@ export default class SubjectDataPreparation {
 
 	async getTableData(dateRange) {
 		if (!this.items) await this.initializeItems();
+
+		const { journal_app_id, event_date_field_id } =
+			this.scope.field_model.data_model;
+
 		//filter by user pagination
 		const filtered_items = await FilterItems.ByPagination(
 			this.items,
-			this.scope,
+			journal_app_id,
+			event_date_field_id,
 			dateRange
 		);
 
@@ -262,7 +267,7 @@ async function getLessonsDatesFilteredByCurrentAppSubjectAndClass(
 	dateRange
 ) {
 	const { appId, itemId, fieldId } = scope;
-	const { lessons_filters_list, lessons_date_field_id } =
+	const { lessons_app_id, lessons_filters_list, lessons_date_field_id } =
 		scope.field_model.data_model;
 	const modifiedFilterList = await gudhub.prefilter(lessons_filters_list, {
 		element_app_id: fieldId,
@@ -270,18 +275,22 @@ async function getLessonsDatesFilteredByCurrentAppSubjectAndClass(
 		app_id: appId
 	});
 	const lessonItems = await gudhub.getItems(appId);
+// debugger
+
 	const filteredByPagination = await FilterItems.ByPagination(
 		lessonItems,
-		scope,
+		lessons_app_id,
+		lessons_date_field_id,
 		dateRange
 	);
 	const filteredItems = await gudhub.filter(
 		filteredByPagination,
 		modifiedFilterList
 	);
-
+	console.log('filteredByPagination', filteredByPagination);
+	console.log('filteredItems', filteredItems);
 	const lessonsDates = new Set();
-
+// debugger
 	filteredItems.forEach((item) => {
 		const { fields } = item;
 		const foundField = fields.find(

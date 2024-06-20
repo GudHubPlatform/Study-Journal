@@ -11,10 +11,15 @@ export default class StudentDataPreparation {
 
 	async getTableData(dateRange) {
 		if (!this.items) await this.initializeItems();
+
+		const { journal_app_id, event_date_field_id } =
+			this.scope.field_model.data_model;
+
 		//filter by user pagination
 		const filtered_items = await FilterItems.ByPagination(
 			this.items,
-			this.scope,
+			journal_app_id,
+			event_date_field_id,
 			dateRange
 		);
 		const interpretated_filtered_items =
