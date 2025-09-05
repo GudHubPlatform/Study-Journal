@@ -28,7 +28,8 @@ export default class DatePagination {
 		this.nextIconSpan.innerHTML =
 			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M294.1 256L167 129c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.3 34 0L345 239c9.1 9.1 9.3 23.7.7 33.1L201.1 417c-4.7 4.7-10.9 7-17 7s-12.3-2.3-17-7c-9.4-9.4-9.4-24.6 0-33.9l127-127.1z"></path></svg>';
 
-		this.buttons_container = this.container.querySelector('.buttons-container');
+		this.buttons_container =
+			this.container.querySelector('.buttons-container');
 
 		this.prevButton = document.createElement('button');
 		this.prevButton.classList.add('icon-button', 'pagination-button');
@@ -91,8 +92,12 @@ export default class DatePagination {
 			this.handleTodayClick()
 		);
 
-		for (const [daysLength, button] of Object.entries(this.rangeButtonsMap)) {
-			button.addEventListener('click', () => this.handleSelectRange(daysLength));
+		for (const [daysLength, button] of Object.entries(
+			this.rangeButtonsMap
+		)) {
+			button.addEventListener('click', () =>
+				this.handleSelectRange(daysLength)
+			);
 		}
 	}
 
@@ -161,6 +166,17 @@ export default class DatePagination {
 	}
 
 	getRangeDaysToday(dateRangeLength) {
+		// Якщо обрано режим 'month' (28), повертаємо календарний місяць
+		if (dateRangeLength === 28) {
+			const now = new Date();
+			const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+			startDate.setHours(0, 0, 0, 0);
+			const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+			endDate.setHours(23, 59, 59, 999);
+			return { start: startDate.getTime(), end: endDate.getTime() };
+		}
+
+		// Стара логіка для тижня та дня
 		const now = new Date();
 		now.setHours(0, 0, 0, 0);
 		const currentDayOfWeek = now.getDay();
@@ -172,34 +188,45 @@ export default class DatePagination {
 		const startDate = new Date(endDate);
 		startDate.setDate(endDate.getDate() - (dateRangeLength - 1));
 		const startMilliseconds = startDate.getTime();
-		endDate.setHours(23, 59)
+		endDate.setHours(23, 59);
 		const endMilliseconds = endDate.getTime();
 
 		return { start: startMilliseconds, end: endMilliseconds };
 	}
 
 	calculateRangeMove(range, addDays = false) {
+		// Якщо 'month' режим – пересуваємось календарними місяцями
+		if (this.dateRangeLength === 28) {
+			const current = new Date(range.start);
+			const move = addDays ? 1 : -1; // 1 місяць вперед або назад
+			const newStart = new Date(
+				current.getFullYear(),
+				current.getMonth() + move,
+				1
+			);
+			newStart.setHours(0, 0, 0, 0);
+			const newEnd = new Date(
+				newStart.getFullYear(),
+				newStart.getMonth() + 1,
+				0
+			);
+			newEnd.setHours(23, 59, 59, 999);
+			return { start: newStart.getTime(), end: newEnd.getTime() };
+		}
+
+		// Стара логіка для 7 та 1 дня
 		const startDate = new Date(range.start);
 		const endDate = new Date(range.end);
-		const getDMY = (ms) => {
-			const date = new Date(ms);
-			return `${date.getDate()}:${date.getMonth()}:${date.getFullYear()}`;
-		};
 
 		if (addDays) {
 			startDate.setDate(startDate.getDate() + this.dateRangeLength);
-
 			endDate.setDate(endDate.getDate() + this.dateRangeLength);
 		} else {
 			startDate.setDate(startDate.getDate() - this.dateRangeLength);
-
 			endDate.setDate(endDate.getDate() - this.dateRangeLength);
 		}
 
-		const startMilliseconds = startDate.getTime();
-		const endMilliseconds = endDate.getTime();
-
-		return { start: startMilliseconds, end: endMilliseconds };
+		return { start: startDate.getTime(), end: endDate.getTime() };
 	}
 
 	convertMillisecondsToDateText(dateRange) {

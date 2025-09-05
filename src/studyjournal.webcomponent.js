@@ -59,7 +59,7 @@ class GhStudyJournal extends GhHtmlElement {
 		resizeElements.subscribe();
 	}
 
-	// disconnectedCallback() is called after the component is destroyed 
+	// disconnectedCallback() is called after the component is destroyed
 	disconnectedCallback() {
 		const { journal_app_id } = this.scope.field_model.data_model;
 
@@ -98,26 +98,32 @@ class GhStudyJournal extends GhHtmlElement {
 			};
 		};
 
-		const updateColHeaderTH = function(col, thElement) {
+		const updateColHeaderTH = function (col, thElement) {
 			const spanElement = thElement.querySelector('.colHeader');
-			if (spanElement) {
-				const text = spanElement.textContent.trim();
-				if (text.length > 5) {
-					spanElement.textContent = text.split(' ').join('\n');
-				}
+
+			if (!spanElement || !spanElement.textContent) {
+				return;
 			}
+
+			const thDate = spanElement.textContent.trim();
+			if (!thDate || thDate.length === 0) return;
+
+			const [day, month] = thDate.split('/').map(Number);
+
+			const paddedMonth = `${month}`.padStart(2, '0');
+			const paddedDay = `${day}`.padStart(2, '0');
+
+			spanElement.innerHTML = `<span>${paddedDay}</span><span>${paddedMonth}</span>`;
+
 			if (spanElement) {
-				const thDate = spanElement.textContent;
 				const today = new Date();
-				
-				const [day, month] = thDate.split('/').map(Number);
-				
-				const isEqual = today.getDate() === day && (today.getMonth() + 1) === month;
+
+				const isEqual =
+					today.getDate() === day && today.getMonth() + 1 === month;
 
 				if (isEqual) {
 					thElement.classList.add('todayColumn');
 				}
-
 			}
 		};
 
@@ -132,20 +138,30 @@ class GhStudyJournal extends GhHtmlElement {
 			columnHeaderHeight: 90,
 			licenseKey: 'non-commercial-and-evaluation',
 			selectionMode: 'single',
-			afterLoadData: function() {
+			afterLoadData: function () {
 				const headersDate = this.getColHeader();
 
 				const today = new Date();
-				const strDayMonth = [today.getDate(), today.getMonth() + 1].join('/');
+				const strDayMonth = [
+					today.getDate(),
+					today.getMonth() + 1
+				].join('/');
 
-				const colIndex = headersDate.findIndex((date) => date === strDayMonth);
+				const colIndex = headersDate.findIndex(
+					(date) => date === strDayMonth
+				);
 				if (colIndex > 1) {
 					for (let i = 0; i < this.countRows(); i++) {
-						this.setCellMeta(i, colIndex, 'className', 'todayColumn');
+						this.setCellMeta(
+							i,
+							colIndex,
+							'className',
+							'todayColumn'
+						);
 					}
 				}
 			},
-			afterOnCellMouseUp: function(event, coords, td) {
+			afterOnCellMouseUp: function (event, coords, td) {
 				if (event.which === 1) {
 					clickCallback.call(this, event, coords);
 					return;
@@ -153,7 +169,7 @@ class GhStudyJournal extends GhHtmlElement {
 
 				var now = new Date().getTime();
 				// check if dbl-clicked within 1/5th of a second
-				if(!(td.lastClick && now - td.lastClick < 200)) {
+				if (!(td.lastClick && now - td.lastClick < 200)) {
 					td.lastClick = now;
 					return; // no double-click detected
 				}
